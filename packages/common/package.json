@@ -1,0 +1,12 @@
+{
+    "name": "common",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "devDependencies": {
+        "tsconfig": "workspace:*",
+        "typescript": "~5.8.2"
+    },
+    "scripts": {
+        "build": "tsc"
+    }
+}
