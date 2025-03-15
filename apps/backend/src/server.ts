@@ -1,11 +1,22 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { toNodeHandler } from "better-auth/node";
+
+
 dotenv.config();
 
 const app = express();
+
+// Configure CORS
+app.use(cors({
+    origin: "*", // In production, specify your mobile app's origin
+    credentials: true
+}));
+
+
 app.use(express.json());
-app.use(cors());
+
 
 app.get("/", (req, res) => {
     res.json({ message: "Backend is running with TypeScript!" });

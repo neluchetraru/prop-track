@@ -18,6 +18,9 @@
     "turbo": "^2.4.4"
   },
   "dependencies": {
-    "common": "^0.2.5"
+    "@better-auth/expo": "^1.2.4",
+    "better-auth": "^1.2.4",
+    "common": "^0.2.5",
+    "prisma": "link:better-auth/adapters/prisma"
   }
 }

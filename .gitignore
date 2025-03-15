@@ -40,3 +40,13 @@ app-example
 
 # turbo
 .turbo
+
+
+android/
+ios/
+
+# better-auth
+.env.local
+.env.*
+.env
+generated/
