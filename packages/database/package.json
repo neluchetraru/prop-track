@@ -6,6 +6,8 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
+        "dev": "tsc --watch",
+        "clean": "rm -rf dist",
         "db:generate": "prisma generate",
         "db:migrate": "prisma migrate dev --skip-generate",
         "db:push": "prisma db push",

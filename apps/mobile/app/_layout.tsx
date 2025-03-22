@@ -3,6 +3,9 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import Toast from "react-native-toast-message";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function useProtectedRoute() {
   const segments = useSegments();
@@ -27,6 +30,7 @@ function useProtectedRoute() {
 export default function RootLayout() {
   useProtectedRoute();
   const { isPending } = authClient.useSession();
+  console.log("isPending", authClient.getSession());
 
   if (isPending) {
     return (
@@ -37,12 +41,12 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Stack>
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ title: "Home" }} />
       </Stack>
       <Toast />
-    </>
+    </QueryClientProvider>
   );
 }

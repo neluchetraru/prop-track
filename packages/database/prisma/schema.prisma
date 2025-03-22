@@ -15,16 +15,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String     @id @default(cuid())
+  email         String     @unique
   password      String?
   name          String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   emailVerified Boolean
   image         String?
   sessions      Session[]
   accounts      Account[]
+  properties    Property[]
 
   @@map("user")
 }
@@ -72,4 +73,17 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Property {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  type      String // e.g., "HOUSE", "APARTMENT", "CONDO"
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("property")
 }

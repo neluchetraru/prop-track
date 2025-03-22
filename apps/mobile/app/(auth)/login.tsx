@@ -24,6 +24,7 @@ export default function Login() {
       const result = await authClient.signIn.email({
         email,
         password,
+        callbackURL: "prop-track://",
       });
 
       console.log(result);

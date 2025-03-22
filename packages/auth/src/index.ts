@@ -1,30 +1,32 @@
-import { betterAuth } from "better-auth";
+import { config } from 'dotenv';
+import { betterAuth, BetterAuthClientPlugin } from "better-auth";
 import { expo } from "@better-auth/expo";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@prop-track/database";
 
-console.log("BETTER_AUTH_SECRET:", process.env.BETTER_AUTH_SECRET);
+// Load environment variables
+config();
+
+// Validate required environment variables
+const requiredEnvVars = [
+    'BETTER_AUTH_URL',
+    'BETTER_AUTH_SECRET',
+    'BETTER_AUTH_TRUSTED_ORIGINS',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET'
+] as const;
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        throw new Error(`Missing required environment variable: ${envVar}`);
+    }
+}
+
 export const auth = betterAuth({
     // Secret key for encryption
     baseURL: process.env.BETTER_AUTH_URL!,
     secret: process.env.BETTER_AUTH_SECRET!,
-    trustedOrigins: [
-        "prop-track://*",
-        "exp://*",
-        "http://localhost:*",
-        "exp.host",
-        "*"
-    ],
-    onAPIError: {
-        onError: (error) => {
-            console.error("API Error:", error);
-        }
-    },
-
-    logger: {
-        disabled: false,
-        level: "debug",
-    },
+    trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(","),
 
     database: prismaAdapter(prisma, {
         provider: "postgresql"
@@ -50,4 +52,12 @@ export const auth = betterAuth({
             overrideOrigin: true
         })
     ]
-}); 
+});
+
+
+
+
+export type SessionObject = typeof auth.$Infer.Session;
+export type User = SessionObject['user'];
+export type Session = SessionObject['session'];
+export type SessionData = SessionObject;
