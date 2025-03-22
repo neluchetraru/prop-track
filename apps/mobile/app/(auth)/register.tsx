@@ -1,13 +1,7 @@
 import React, { useState } from "react";
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Text,
-} from "react-native";
+import { YStack, Input, Button, Text, XStack } from "tamagui";
 import { authClient } from "@/lib/auth-client";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 import Toast from "react-native-toast-message";
 
 export default function Register() {
@@ -47,104 +41,62 @@ export default function Register() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Create Account</Text>
-      </View>
+    <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
+      <YStack ai="center" mb="$8">
+        <Text fontSize="$8" fontWeight="bold">
+          Create Account
+        </Text>
+      </YStack>
 
-      <TextInput
-        style={styles.input}
+      <Input
+        size="$4"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      <TextInput
-        style={styles.input}
+
+      <Input
+        size="$4"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
+
+      <Input
+        size="$4"
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
 
-      <TouchableOpacity
-        style={styles.button}
+      <Button
+        size="$4"
+        theme="active"
         onPress={handleRegister}
-        disabled={isLoading}
+        disabled={
+          isLoading ||
+          !email ||
+          !password ||
+          !confirmPassword ||
+          password !== confirmPassword
+        }
       >
-        <Text style={styles.buttonText}>
-          {isLoading ? "Creating Account..." : "Sign Up"}
-        </Text>
-      </TouchableOpacity>
+        {isLoading ? "Creating Account..." : "Sign Up"}
+      </Button>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
+      <XStack jc="center" mt="$4">
+        <Text color="$gray10">Already have an account? </Text>
         <Link href="/login" asChild>
-          <TouchableOpacity>
-            <Text style={styles.link}>Sign In</Text>
-          </TouchableOpacity>
+          <Text color="$blue10" fontWeight="600">
+            Sign In
+          </Text>
         </Link>
-      </View>
+      </XStack>
       <Toast />
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#fff",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  input: {
-    height: 50,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: "#f9f9f9",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  footerText: {
-    color: "#666",
-  },
-  link: {
-    color: "#007AFF",
-    fontWeight: "600",
-  },
-});

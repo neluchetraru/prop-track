@@ -7,6 +7,8 @@ export class PropertyService {
             throw new Error("User ID is required");
         }
 
+        console.log("userId", userId);
+
         return prisma.property.findMany({
             where: {
                 userId: userId

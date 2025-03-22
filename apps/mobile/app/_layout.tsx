@@ -4,6 +4,8 @@ import { View, ActivityIndicator } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import Toast from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TamaguiProvider } from "tamagui";
+import config from "../tamagui.config";
 
 const queryClient = new QueryClient();
 
@@ -41,12 +43,20 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack>
-        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ title: "Home" }} />
-      </Stack>
-      <Toast />
-    </QueryClientProvider>
+    <TamaguiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <Stack>
+          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="properties/[id]"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
+        <Toast />
+      </QueryClientProvider>
+    </TamaguiProvider>
   );
 }

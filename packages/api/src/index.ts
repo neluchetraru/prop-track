@@ -16,7 +16,7 @@ export const createApi = (fetcher: BetterFetch, baseURL: string) => {
             },
 
             create: async (property: Omit<Property, 'id'>): Promise<Property> => {
-                const response = await fetcher(`/api/properties`, {
+                const response = await fetcher(`/properties`, {
                     method: "POST",
                     body: property,
                     baseURL,

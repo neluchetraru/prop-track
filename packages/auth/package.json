@@ -10,9 +10,8 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
-        "better-auth": "^1.0.0",
-        "better-auth/react": "^1.0.0",
-        "@better-auth/expo": "^1.0.0",
+        "better-auth": "^1.2.4",
+        "@better-auth/expo": "^1.2.4",
         "@prop-track/database": "workspace:*",
         "dotenv": "^16.0.0"
     },

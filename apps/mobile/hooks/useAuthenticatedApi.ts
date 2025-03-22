@@ -3,7 +3,7 @@ import { authClient } from "@/lib/auth-client";
 import { useCallback } from "react";
 
 export function useAuthenticatedApi() {
-    const api = createApi(authClient.$fetch);
+    const api = createApi(authClient.$fetch, process.env.EXPO_PUBLIC_API_URL!);
 
     const withAuth = useCallback(async <T>(
         operation: () => Promise<T>

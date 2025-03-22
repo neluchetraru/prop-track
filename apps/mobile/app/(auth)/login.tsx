@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Text,
-  Image,
-} from "react-native";
+import { YStack, Input, Button, Text, XStack } from "tamagui";
+import { Image } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import { Link, router } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -64,136 +58,63 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        {/* <Image source={require("@/assets/logo.png")} style={styles.logo} /> */}
-        <Text style={styles.title}>Welcome Back</Text>
-      </View>
+    <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
+      <YStack ai="center" mb="$8">
+        <Text fontSize="$8" fontWeight="bold">
+          Welcome Back
+        </Text>
+      </YStack>
 
-      <TextInput
-        style={styles.input}
+      <Input
+        size="$4"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      <TextInput
-        style={styles.input}
+
+      <Input
+        size="$4"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
 
-      <TouchableOpacity
-        style={styles.button}
+      <Button
+        size="$4"
+        theme="active"
         onPress={handleLogin}
-        disabled={isLoading}
+        disabled={isLoading || !email || !password}
       >
-        <Text style={styles.buttonText}>
-          {isLoading ? "Signing in..." : "Sign In"}
-        </Text>
-      </TouchableOpacity>
+        {isLoading ? "Signing in..." : "Sign In"}
+      </Button>
 
-      <TouchableOpacity
-        style={styles.googleButton}
+      <Button
+        size="$4"
+        variant="outlined"
         onPress={handleGoogleLogin}
         disabled={isLoading}
+        icon={
+          <Image
+            source={require("@/assets/images/google-logo.png")}
+            style={{ width: 20, height: 20, marginRight: 10 }}
+          />
+        }
       >
-        <Image
-          source={require("@/assets/images/google-logo.png")}
-          style={styles.googleIcon}
-        />
-        <Text style={styles.googleButtonText}>Sign in with Google</Text>
-      </TouchableOpacity>
+        Sign in with Google
+      </Button>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
+      <XStack jc="center" mt="$4">
+        <Text color="$gray10">Don't have an account? </Text>
         <Link href="/register" asChild>
-          <TouchableOpacity>
-            <Text style={styles.link}>Sign Up</Text>
-          </TouchableOpacity>
+          <Text color="$blue10" fontWeight="600">
+            Sign Up
+          </Text>
         </Link>
-      </View>
+      </XStack>
       <Toast />
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#fff",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  input: {
-    height: 50,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: "#f9f9f9",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  googleButton: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
-  },
-  googleButtonText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  footerText: {
-    color: "#666",
-  },
-  link: {
-    color: "#007AFF",
-    fontWeight: "600",
-  },
-});
