@@ -78,7 +78,7 @@ export default function PropertyDetails() {
   if (isLoading || !property) {
     return (
       <YStack f={1} ai="center" jc="center">
-        <Spinner size="large" color="$blue10" />
+        <Spinner size="large" color="$green10" />
       </YStack>
     );
   }
@@ -96,92 +96,74 @@ export default function PropertyDetails() {
 
   return (
     <ScrollView>
-      <YStack f={1} space="$4">
-        <XStack p="$4" ai="center" space="$3">
+      <YStack f={1} gap="$4">
+        <XStack p="$4" ai="center" gap="$3">
           <Button
             size="$3"
             circular
             icon={ArrowLeft}
             onPress={() => router.back()}
-            // theme="gray"
           />
-          <Text fontSize="$6" fontWeight="bold" f={1}>
+          <Text fos="$7" fow="bold" f={1}>
             Property Details
           </Text>
-          <XStack space="$2">
+          <XStack gap="$2">
             <Button
               size="$3"
               circular
               icon={Edit3}
               onPress={() => router.push(`/properties/${id}/edit`)}
-              theme="blue"
             />
             <Button
               size="$3"
               circular
               icon={Trash2}
               onPress={handleDelete}
-              theme="red"
+              theme="error"
             />
           </XStack>
         </XStack>
 
         <Separator />
 
-        <YStack px="$4" space="$4">
-          <Card elevate bordered p="$4">
-            <YStack space="$4">
-              <XStack space="$4" ai="center">
-                <YStack
-                  w="$6"
-                  h="$6"
-                  ai="center"
-                  jc="center"
-                  br="$4"
-                  bg="$blue2"
-                >
-                  <Icon size={32} color="$blue10" />
+        <YStack px="$4" gap="$4">
+          <Card p="$4">
+            <YStack gap="$4">
+              <XStack gap="$4" ai="center">
+                <YStack w="$7" h="$7" ai="center" jc="center" br="$4">
+                  <Icon size={32} />
                 </YStack>
                 <YStack f={1}>
-                  <H4 color="$gray12">{property.name}</H4>
-                  <XStack ai="center" space="$2" mt="$2">
-                    <MapPin size={16} color="$gray10" />
-                    <Paragraph size="$3" color="$gray11">
-                      {property.address}
-                    </Paragraph>
+                  <H4 fos="$6">{property.name}</H4>
+                  <XStack ai="center" gap="$2" mt="$2">
+                    <MapPin size={16} />
+                    <Paragraph size="$3">{property.address}</Paragraph>
                   </XStack>
                 </YStack>
               </XStack>
 
               <Separator />
 
-              <YStack space="$4">
-                <XStack ai="center" space="$2">
-                  <Text color="$gray11" fontSize="$3">
-                    Type:
-                  </Text>
-                  <Card bordered br="$4" bg="$blue2" borderColor="transparent">
-                    <Text
-                      p="$2"
-                      color="$blue10"
-                      fontWeight="500"
-                      textTransform="capitalize"
-                    >
+              <YStack gap="$4">
+                <XStack ai="center" gap="$2">
+                  <Text fos="$3">Type:</Text>
+                  <Card bordered br="$4">
+                    <Text p="$2" fow="500" transform="capitalize">
                       {property.type.toLowerCase()}
                     </Text>
                   </Card>
                 </XStack>
 
-                <XStack ai="center" space="$2">
-                  <Calendar size={16} color="$gray10" />
-                  <Text color="$gray11" fontSize="$3">
+                <XStack ai="center" gap="$2">
+                  <Calendar size={16} />
+                  <Text fos="$3">
                     Added on {formatDate(property.createdAt)}
                   </Text>
                 </XStack>
 
-                <XStack ai="center" space="$2">
-                  <Calendar size={16} color="$gray10" />
-                  <Text color="$gray11" fontSize="$3">
+                <XStack ai="center" gap="$2">
+                  <Calendar size={16} />
+                  <Text fos="$3">
                     Last updated {formatDate(property.updatedAt)}
                   </Text>
                 </XStack>
@@ -189,18 +171,17 @@ export default function PropertyDetails() {
             </YStack>
           </Card>
 
-          {/* Additional sections can be added here */}
-          <Card elevate bordered p="$4">
-            <YStack space="$2">
-              <H4 color="$gray12">Statistics</H4>
-              <Paragraph color="$gray11">Coming soon...</Paragraph>
+          <Card elevate bordered p="$4" theme="accent">
+            <YStack gap="$2">
+              <H4 fos="$5">Statistics</H4>
+              <Paragraph fos="$3">Coming soon...</Paragraph>
             </YStack>
           </Card>
 
-          <Card elevate bordered p="$4">
-            <YStack space="$2">
-              <H4 color="$gray12">Documents</H4>
-              <Paragraph color="$gray11">Coming soon...</Paragraph>
+          <Card elevate bordered p="$4" theme="accent">
+            <YStack gap="$2">
+              <H4 fos="$5">Documents</H4>
+              <Paragraph fos="$3">Coming soon...</Paragraph>
             </YStack>
           </Card>
         </YStack>

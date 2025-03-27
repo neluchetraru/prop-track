@@ -104,17 +104,13 @@ export default function NewProperty() {
 
   return (
     <ScrollView>
-      <YStack f={1} p="$4" space="$4">
+      <YStack f={1} p="$4" gap="$4">
         <Card elevate bordered p="$4">
-          <YStack space="$4">
-            <Text fontSize="$8" fontWeight="bold" color="$blue10">
-              Add New Property
-            </Text>
+          <YStack gap="$4">
+            <Text>Add New Property</Text>
 
-            <YStack space="$2">
-              <Label htmlFor="name" color="$gray11">
-                Property Name
-              </Label>
+            <YStack gap="$2">
+              <Label htmlFor="name">Property Name</Label>
               <Controller
                 control={control}
                 name="name"
@@ -122,29 +118,27 @@ export default function NewProperty() {
                   <Input
                     id="name"
                     size="$4"
-                    borderWidth={2}
+                    bw={2}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     placeholder="Enter property name"
-                    borderColor={errors.name ? "$red8" : "$gray8"}
+                    bc={errors.name ? "$red8" : "$colorTransparent"}
                   />
                 )}
               />
               {errors.name && (
-                <XStack space="$2" ai="center" mt="$2">
-                  <AlertCircle size={16} color="$red10" />
-                  <Paragraph size="$2" color="$red10">
+                <XStack gap="$2" ai="center" mt="$2">
+                  <AlertCircle size={16} col="$red10" />
+                  <Paragraph size="$2" col="$red10">
                     {errors.name.message}
                   </Paragraph>
                 </XStack>
               )}
             </YStack>
 
-            <YStack space="$2">
-              <Label htmlFor="address" color="$gray11">
-                Address
-              </Label>
+            <YStack gap="$2">
+              <Label htmlFor="address">Address</Label>
               <Controller
                 control={control}
                 name="address"
@@ -152,36 +146,35 @@ export default function NewProperty() {
                   <Input
                     id="address"
                     size="$4"
-                    borderWidth={2}
+                    bw={2}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     placeholder="Enter property address"
                     multiline
                     numberOfLines={3}
-                    textAlignVertical="top"
-                    borderColor={errors.address ? "$red8" : "$gray8"}
+                    bc={errors.address ? "$red8" : "$colorTransparent"}
                   />
                 )}
               />
               {errors.address && (
-                <XStack space="$2" ai="center" mt="$2">
-                  <AlertCircle size={16} color="$red10" />
-                  <Paragraph size="$2" color="$red10">
+                <XStack gap="$2" ai="center" mt="$2">
+                  <AlertCircle size={16} col="$red10" />
+                  <Paragraph size="$2" col="$red10">
                     {errors.address.message}
                   </Paragraph>
                 </XStack>
               )}
             </YStack>
 
-            <YStack space="$2">
-              <Label color="$gray11">Property Type</Label>
+            <YStack gap="$2">
+              <Label>Property Type</Label>
               <Controller
                 control={control}
                 name="type"
                 render={({ field: { onChange, value } }) => (
-                  <RadioGroup value={value} onValueChange={onChange} space="$2">
-                    <XStack space="$4" flexWrap="wrap">
+                  <RadioGroup value={value} onValueChange={onChange} gap="$2">
+                    <XStack fw="wrap" gap="$2">
                       {PROPERTY_TYPES.map(
                         ({ value: typeValue, label, icon: Icon }) => (
                           <RadioGroup.Item
@@ -191,29 +184,24 @@ export default function NewProperty() {
                             p="$4"
                             flexDirection="row"
                             alignItems="center"
-                            borderColor={
-                              value === typeValue ? "$blue10" : "$gray5"
+                            bc={
+                              value === typeValue ? "$green10" : "$background"
                             }
-                            borderWidth={2}
-                            borderRadius="$4"
-                            backgroundColor={
-                              value === typeValue ? "$blue2" : "transparent"
-                            }
+                            bw={2}
+                            br="$4"
                           >
                             <Icon
                               size={24}
-                              color={
-                                value === typeValue ? "$blue10" : "$gray10"
+                              col={
+                                value === typeValue ? "$green10" : "$background"
                               }
                             />
                             <Text
                               ml="$2"
-                              color={
-                                value === typeValue ? "$blue10" : "$gray10"
+                              col={
+                                value === typeValue ? "$green10" : "$background"
                               }
-                              fontWeight={
-                                value === typeValue ? "bold" : "normal"
-                              }
+                              fow={value === typeValue ? "bold" : "normal"}
                             >
                               {label}
                             </Text>
@@ -228,11 +216,11 @@ export default function NewProperty() {
 
             <Button
               size="$4"
-              theme="active"
+              theme="accent"
               onPress={handleSubmit(onSubmit)}
               disabled={isSubmitting || createProperty.isPending}
               pressStyle={{ scale: 0.97 }}
-              opacity={isSubmitting || createProperty.isPending ? 0.5 : 1}
+              o={isSubmitting || createProperty.isPending ? 0.5 : 1}
             >
               {createProperty.isPending ? "Creating..." : "Create Property"}
             </Button>
