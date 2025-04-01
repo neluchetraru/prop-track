@@ -6,6 +6,8 @@ import { auth } from "@prop-track/auth";
 import propertyRoutes from "./routes/property";
 import { getSession } from "./middleware/auth";
 
+import morgan from "morgan"
+
 dotenv.config();
 
 const app = express();
@@ -18,6 +20,8 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+app.use(morgan(process.env.ENVIRONMENT === "development" ? "dev" : "combined"));
 
 
 // Add auth routes
