@@ -18,7 +18,6 @@ export default function Login() {
       const result = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "prop-track://",
       });
 
       console.log(result);
@@ -60,9 +59,7 @@ export default function Login() {
   return (
     <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
       <YStack ai="center" mb="$8">
-        <Text fontSize="$8" fontWeight="bold">
-          Welcome Back
-        </Text>
+        <Text fos="$8">Welcome Back</Text>
       </YStack>
 
       <Input
@@ -84,7 +81,6 @@ export default function Login() {
 
       <Button
         size="$4"
-        theme="active"
         onPress={handleLogin}
         disabled={isLoading || !email || !password}
       >
@@ -107,11 +103,9 @@ export default function Login() {
       </Button>
 
       <XStack jc="center" mt="$4">
-        <Text color="$gray10">Don't have an account? </Text>
+        <Text>Don't have an account? </Text>
         <Link href="/register" asChild>
-          <Text color="$blue10" fontWeight="600">
-            Sign Up
-          </Text>
+          <Text>Sign Up</Text>
         </Link>
       </XStack>
       <Toast />

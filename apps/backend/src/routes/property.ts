@@ -31,22 +31,11 @@ router.get("/:id", requireAuth, async (req, res) => {
 // Create a new property
 router.post("/", requireAuth, async (req, res) => {
     try {
-        const { name, address, type } = req.body;
-
-        const property = await propertyService.create({
-            name,
-            address,
-            type,
-            user: {
-                connect: {
-                    id: req.user?.id,
-                },
-            },
-        });
+        const property = await propertyService.create(req.user?.id!, req.body);
 
         res.status(201).json(property);
     } catch (error) {
-        console.log(error);
+        console.log(error)
         res.status(500).json({ error: "Failed to create property" });
     }
 });

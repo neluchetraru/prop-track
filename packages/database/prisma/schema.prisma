@@ -76,14 +76,99 @@ model Verification {
 }
 
 model Property {
-  id        String   @id @default(cuid())
-  name      String
-  address   String
-  type      String // e.g., "HOUSE", "APARTMENT", "CONDO"
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id    String  @id @default(cuid())
+  name  String
+  notes String?
+  value Float?
+
+  // Address
+  propertyLocation   PropertyLocation? @relation(fields: [propertyLocationId], references: [id])
+  propertyLocationId String?           @unique
+
+  // Property Type
+  type PropertyType @default(APARTMENT)
+
+  // User
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Images
+  images Image[]
+
+  // Documents
+  documents PropertyDocument[]
+
+  // Tenants
+  tenants Tenant[]
+
+  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("property")
+}
+
+model PropertyLocation {
+  id         String    @id @default(cuid())
+  address    String
+  city       String
+  country    String
+  postalCode String
+  latitude   Float?
+  longitude  Float?
+  Property   Property?
+
+  @@map("property_location")
+}
+
+model Tenant {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  // Tenant Status
+  status TenantStatus @default(ACTIVE)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tenant")
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model PropertyDocument {
+  id         String               @id @default(cuid())
+  url        String
+  propertyId String
+  type       PropertyDocumentType
+  property   Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+enum PropertyDocumentType {
+  PERSONAL
+  PROPERTY_REGISTRATION
+  PROPERTY_UTILITY
+  OTHER
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  VILLA
+  COMMERCIAL
+}
+
+model Image {
+  id         String   @id @default(cuid())
+  url        String
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }

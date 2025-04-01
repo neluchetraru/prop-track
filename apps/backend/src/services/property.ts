@@ -1,37 +1,46 @@
 import { prisma } from "@prop-track/database";
-import type { Property, Prisma } from "@prop-track/database";
+import type { Property, CreatePropertyInput, UpdatePropertyInput, PropertyWithIncludes } from "@prop-track/types";
+import type { Prisma } from "@prop-track/database";
+
 
 export class PropertyService {
-    async list(userId?: string): Promise<Property[]> {
+    async list(userId?: string, include?: Prisma.PropertyInclude): Promise<Partial<PropertyWithIncludes>[]> {
         if (!userId) {
             throw new Error("User ID is required");
         }
 
-        console.log("userId", userId);
-
         return prisma.property.findMany({
             where: {
                 userId: userId
+            },
+            include
+        });
+    }
+
+    async create(userId: string, data: CreatePropertyInput): Promise<Property> {
+        return prisma.property.create({
+            data: {
+                ...data,
+                user: {
+                    connect: {
+                        id: userId
+                    }
+                }
             }
         });
     }
 
-    async create(data: Prisma.PropertyCreateInput): Promise<Property> {
-        return prisma.property.create({
-            data
-        });
-    }
-
-    async getById(id: string, userId: string): Promise<Property | null> {
+    async getById(id: string, userId: string, include?: Prisma.PropertyInclude): Promise<Property | null> {
         return prisma.property.findFirst({
             where: {
                 id,
                 userId
-            }
+            },
+            include
         });
     }
 
-    async update(id: string, userId: string, data: Prisma.PropertyUpdateInput): Promise<Property> {
+    async update(id: string, userId: string, data: UpdatePropertyInput): Promise<Property> {
         const property = await this.getById(id, userId);
 
         if (!property) {

@@ -43,9 +43,7 @@ export default function Register() {
   return (
     <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
       <YStack ai="center" mb="$8">
-        <Text fontSize="$8" fontWeight="bold">
-          Create Account
-        </Text>
+        <Text fos="$8">Create Account</Text>
       </YStack>
 
       <Input
@@ -75,7 +73,6 @@ export default function Register() {
 
       <Button
         size="$4"
-        theme="active"
         onPress={handleRegister}
         disabled={
           isLoading ||
@@ -89,11 +86,9 @@ export default function Register() {
       </Button>
 
       <XStack jc="center" mt="$4">
-        <Text color="$gray10">Already have an account? </Text>
+        <Text>Already have an account? </Text>
         <Link href="/login" asChild>
-          <Text color="$blue10" fontWeight="600">
-            Sign In
-          </Text>
+          <Text>Sign In</Text>
         </Link>
       </XStack>
       <Toast />

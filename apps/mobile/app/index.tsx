@@ -73,7 +73,7 @@ export default function Dashboard() {
           </YStack>
         ) : (
           <YStack gap="$4">
-            <PropertyStats properties={properties} />
+            <PropertyStats properties={properties || []} />
             {properties && properties.length > 0 ? (
               <YStack gap="$2">
                 <XStack ai="center" jc="space-between">

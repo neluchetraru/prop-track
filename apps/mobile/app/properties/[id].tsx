@@ -22,6 +22,7 @@ import {
   ArrowLeft,
   Edit3,
   Trash2,
+  Building,
 } from "@tamagui/lucide-icons";
 import { Alert } from "react-native";
 import Toast from "react-native-toast-message";
@@ -29,7 +30,8 @@ import Toast from "react-native-toast-message";
 const PropertyTypeIcons = {
   HOUSE: Home,
   APARTMENT: Building2,
-  CONDO: Building2,
+  VILLA: Building,
+  COMMERCIAL: Building,
 } as const;
 
 export default function PropertyDetails() {
@@ -94,6 +96,14 @@ export default function PropertyDetails() {
     });
   };
 
+  const formatCurrency = (value: number | null) => {
+    if (value === null) return "Not set";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
+
   return (
     <ScrollView>
       <YStack f={1} gap="$4">
@@ -135,10 +145,14 @@ export default function PropertyDetails() {
                 </YStack>
                 <YStack f={1}>
                   <H4 fos="$6">{property.name}</H4>
-                  <XStack ai="center" gap="$2" mt="$2">
-                    <MapPin size={16} />
-                    <Paragraph size="$3">{property.address}</Paragraph>
-                  </XStack>
+                  {property.propertyLocation && (
+                    <XStack ai="center" gap="$2" mt="$2">
+                      <MapPin size={16} />
+                      <Paragraph size="$3">
+                        {property.propertyLocation.address}
+                      </Paragraph>
+                    </XStack>
+                  )}
                 </YStack>
               </XStack>
 
@@ -153,6 +167,42 @@ export default function PropertyDetails() {
                     </Text>
                   </Card>
                 </XStack>
+
+                {property.value && (
+                  <XStack ai="center" gap="$2">
+                    <Text fos="$3">Value:</Text>
+                    <Card bordered br="$4">
+                      <Text p="$2" fow="500">
+                        {formatCurrency(property.value)}
+                      </Text>
+                    </Card>
+                  </XStack>
+                )}
+
+                {property.notes && (
+                  <YStack gap="$2">
+                    <Text fos="$3">Notes:</Text>
+                    <Card bordered br="$4" p="$2">
+                      <Paragraph size="$3">{property.notes}</Paragraph>
+                    </Card>
+                  </YStack>
+                )}
+
+                {property.propertyLocation && (
+                  <YStack gap="$2">
+                    <Text fos="$3">Location:</Text>
+                    <Card bordered br="$4" p="$2">
+                      <Paragraph size="$3">
+                        {property.propertyLocation.address}
+                      </Paragraph>
+                      <Paragraph size="$3">
+                        {property.propertyLocation.city},{" "}
+                        {property.propertyLocation.country}{" "}
+                        {property.propertyLocation.postalCode}
+                      </Paragraph>
+                    </Card>
+                  </YStack>
+                )}
 
                 <XStack ai="center" gap="$2">
                   <Calendar size={16} />

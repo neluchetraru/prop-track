@@ -17,7 +17,6 @@ export async function getSession(
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-    console.log(req.session);
     if (!req.session) {
         res.status(401).send({
             error: 'Not authenticated',
