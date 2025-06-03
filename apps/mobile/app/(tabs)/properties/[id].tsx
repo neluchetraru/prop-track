@@ -55,7 +55,7 @@ export default function PropertyDetails() {
                 type: "success",
                 text1: "Property deleted successfully",
               });
-              router.replace("/");
+              router.replace("/(tabs)/home");
             } catch (error) {
               Toast.show({
                 type: "error",

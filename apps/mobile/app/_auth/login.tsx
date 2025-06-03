@@ -19,6 +19,7 @@ export default function Login() {
       });
       console.log(result);
       console.log("Login successful, session:", await authClient.getSession());
+      router.replace("/(tabs)/home");
     } catch (error) {
       console.error("Login failed:", error);
       Toast.show({
@@ -39,7 +40,7 @@ export default function Login() {
         provider: "google",
       });
       console.log("Google login successful");
-      router.replace("/");
+      router.replace("/(tabs)/home");
     } catch (error) {
       Toast.show({
         type: "error",
@@ -111,7 +112,7 @@ export default function Login() {
 
       <View className="flex-row justify-center items-center mt-4">
         <Text>Don't have an account? </Text>
-        <Link href="/register" asChild>
+        <Link href="/_auth/register" asChild>
           <Text className="text-blue-600 font-bold ml-1">Sign Up</Text>
         </Link>
       </View>

@@ -99,7 +99,7 @@ export default function Register() {
 
       <View className="flex-row justify-center items-center mt-4">
         <Text>Already have an account? </Text>
-        <Link href="/login" asChild>
+        <Link href="/_auth/login" asChild>
           <Text className="text-blue-600 font-bold ml-1">Sign In</Text>
         </Link>
       </View>
