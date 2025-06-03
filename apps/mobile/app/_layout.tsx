@@ -1,11 +1,32 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import React, { useEffect } from "react";
+import { View, ActivityIndicator, Platform } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import Toast from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { TamaguiProvider } from "tamagui";
-import config from "../tamagui.config";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Theme } from "@react-navigation/native";
+import { NAV_THEME } from "@/lib/constants";
+import "./globals.css";
+import { useColorScheme } from "@/lib/useColorScheme";
+
+const LIGHT_THEME: Theme = {
+  ...DefaultTheme,
+  colors: NAV_THEME.light,
+};
+const DARK_THEME: Theme = {
+  ...DarkTheme,
+  colors: NAV_THEME.dark,
+};
+
+export {
+  // Catch any errors thrown by the Layout component.
+  ErrorBoundary,
+} from "expo-router";
 
 const queryClient = new QueryClient();
 
@@ -30,9 +51,30 @@ function useProtectedRoute() {
 }
 
 export default function RootLayout() {
+  const hasMounted = React.useRef(false);
+  const { colorScheme, isDarkColorScheme } = useColorScheme();
+  const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+
+  // Always call hooks at the top
   useProtectedRoute();
   const { isPending } = authClient.useSession();
-  console.log("isPending", authClient.getSession());
+
+  useIsomorphicLayoutEffect(() => {
+    if (hasMounted.current) {
+      return;
+    }
+
+    if (Platform.OS === "web") {
+      // Adds the background color to the html element to prevent white background on overscroll.
+      document.documentElement.classList.add("bg-background");
+    }
+    setIsColorSchemeLoaded(true);
+    hasMounted.current = true;
+  }, []);
+
+  if (!isColorSchemeLoaded) {
+    return null;
+  }
 
   if (isPending) {
     return (
@@ -43,7 +85,7 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={config}>
+    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
       <QueryClientProvider client={queryClient}>
         <Stack>
           <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
@@ -57,6 +99,11 @@ export default function RootLayout() {
         </Stack>
         <Toast />
       </QueryClientProvider>
-    </TamaguiProvider>
+    </ThemeProvider>
   );
 }
+
+const useIsomorphicLayoutEffect =
+  Platform.OS === "web" && typeof window === "undefined"
+    ? React.useEffect
+    : React.useLayoutEffect;

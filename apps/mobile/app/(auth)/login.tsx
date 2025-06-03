@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { YStack, Input, Button, Text, XStack } from "tamagui";
-import { Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import { Link, router } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -14,14 +13,11 @@ export default function Login() {
     console.log("Starting login attempt...");
     try {
       setIsLoading(true);
-
       const result = await authClient.signIn.email({
         email,
         password,
       });
-
       console.log(result);
-
       console.log("Login successful, session:", await authClient.getSession());
     } catch (error) {
       console.error("Login failed:", error);
@@ -57,58 +53,69 @@ export default function Login() {
   };
 
   return (
-    <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
-      <YStack ai="center" mb="$8">
-        <Text fos="$8">Welcome Back</Text>
-      </YStack>
+    <View className="flex-1 justify-center p-6 bg-white">
+      <View className="items-center mb-8">
+        <Text className="text-3xl font-bold">Welcome Back</Text>
+      </View>
 
-      <Input
-        size="$4"
+      <TextInput
+        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        editable={!isLoading}
+        placeholderTextColor="#888"
       />
 
-      <Input
-        size="$4"
+      <TextInput
+        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        editable={!isLoading}
+        placeholderTextColor="#888"
       />
 
-      <Button
-        size="$4"
+      <TouchableOpacity
+        className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-blue-600 ${
+          isLoading || !email || !password ? "opacity-50" : ""
+        }`}
         onPress={handleLogin}
         disabled={isLoading || !email || !password}
+        activeOpacity={0.8}
       >
-        {isLoading ? "Signing in..." : "Sign In"}
-      </Button>
+        <Text className="text-white font-bold text-base">
+          {isLoading ? "Signing in..." : "Sign In"}
+        </Text>
+      </TouchableOpacity>
 
-      <Button
-        size="$4"
-        variant="outlined"
+      <TouchableOpacity
+        className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-white border border-gray-300 ${
+          isLoading ? "opacity-50" : ""
+        }`}
         onPress={handleGoogleLogin}
         disabled={isLoading}
-        icon={
-          <Image
-            source={require("@/assets/images/google-logo.png")}
-            style={{ width: 20, height: 20, marginRight: 10 }}
-          />
-        }
+        activeOpacity={0.8}
       >
-        Sign in with Google
-      </Button>
+        <Image
+          source={require("@/assets/images/google-logo.png")}
+          className="w-5 h-5 mr-2"
+        />
+        <Text className="text-gray-900 font-bold text-base">
+          Sign in with Google
+        </Text>
+      </TouchableOpacity>
 
-      <XStack jc="center" mt="$4">
+      <View className="flex-row justify-center items-center mt-4">
         <Text>Don't have an account? </Text>
         <Link href="/register" asChild>
-          <Text>Sign Up</Text>
+          <Text className="text-blue-600 font-bold ml-1">Sign Up</Text>
         </Link>
-      </XStack>
+      </View>
       <Toast />
-    </YStack>
+    </View>
   );
 }

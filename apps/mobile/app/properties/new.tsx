@@ -1,35 +1,75 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  YStack,
-  XStack,
-  Input,
-  Button,
+  View,
   Text,
+  TextInput,
+  TouchableOpacity,
   ScrollView,
-  Label,
-  Card,
-  RadioGroup,
-  Paragraph,
-} from "tamagui";
+  Image,
+  Platform,
+  Modal,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 import { authClient } from "@/lib/auth-client";
 import { useAuthenticatedApi } from "@/hooks/useAuthenticatedApi";
-import { Home, Building2, Building, AlertCircle } from "@tamagui/lucide-icons";
+import {
+  Home,
+  Building2,
+  Building,
+  Camera,
+  Upload,
+  UserPlus,
+  ChevronRight,
+  ChevronLeft,
+  X,
+  MapPin,
+} from "lucide-react-native";
 import { z } from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MapLocationPicker } from "@/components/MapLocationPicker";
+import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+import { TenantForm } from "@/components/TenantForm";
 
 const PROPERTY_TYPES = [
-  { value: "HOUSE", label: "House", icon: Home },
-  { value: "APARTMENT", label: "Apartment", icon: Building2 },
-  { value: "VILLA", label: "Villa", icon: Building },
-  { value: "COMMERCIAL", label: "Commercial", icon: Building },
-] as const;
+  {
+    value: "HOUSE",
+    label: "House",
+    icon: <Home size={24} color="#2563eb" />,
+  },
+  {
+    value: "APARTMENT",
+    label: "Apartment",
+    icon: <Building2 size={24} color="#2563eb" />,
+  },
+  {
+    value: "VILLA",
+    label: "Villa",
+    icon: <Building size={24} color="#2563eb" />,
+  },
+  {
+    value: "COMMERCIAL",
+    label: "Commercial",
+    icon: <Building size={24} color="#2563eb" />,
+  },
+];
 
-// Zod schema for form validation
+const tenantSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .nonempty("Name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  leaseStartDate: z.string().optional(),
+  leaseEndDate: z.string().optional(),
+  monthlyRent: z.number().optional(),
+});
+
 const propertySchema = z.object({
   name: z
     .string()
@@ -66,20 +106,48 @@ const propertySchema = z.object({
       .trim()
       .nonempty("Postal code is required"),
   }),
+  tenants: z.array(tenantSchema).optional(),
+  images: z
+    .array(z.object({ uri: z.string(), name: z.string(), type: z.string() }))
+    .optional(),
+  documents: z
+    .array(z.object({ uri: z.string(), name: z.string(), type: z.string() }))
+    .optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
+
+const STEPS = [
+  "Basic Info",
+  "Location",
+  "Images",
+  "Documents",
+  "Tenants",
+  "Review",
+];
 
 export default function NewProperty() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const { api } = useAuthenticatedApi();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [images, setImages] = useState<
+    Array<{ uri: string; name: string; type: string }>
+  >([]);
+  const [documents, setDocuments] = useState<
+    Array<{ uri: string; name: string; type: string }>
+  >([]);
+  const [tenants, setTenants] = useState<Array<z.infer<typeof tenantSchema>>>(
+    []
+  );
+  const [showTenantForm, setShowTenantForm] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -88,6 +156,9 @@ export default function NewProperty() {
       notes: "",
       value: undefined,
       type: "HOUSE",
+      tenants: [],
+      images: [],
+      documents: [],
     },
   });
 
@@ -97,23 +168,100 @@ export default function NewProperty() {
     country: string;
     postalCode: string;
   }) => {
-    console.log("location", location);
     setValue("propertyLocation.address", location.address);
     setValue("propertyLocation.city", location.city);
     setValue("propertyLocation.country", location.country);
     setValue("propertyLocation.postalCode", location.postalCode);
   };
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      const newImage = {
+        uri: result.assets[0].uri,
+        name: `image-${Date.now()}.jpg`,
+        type: "image/jpeg",
+      };
+      setImages((prev) => [...prev, newImage]);
+      setValue("images", [...images, newImage]);
+    }
+  };
+
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ],
+        copyToCacheDirectory: true,
+      });
+      if (result.assets && result.assets.length > 0) {
+        const doc = result.assets[0];
+        const newDoc = {
+          uri: doc.uri,
+          name: doc.name,
+          type: doc.mimeType || "application/octet-stream",
+        };
+        setDocuments((prev) => [...prev, newDoc]);
+        setValue("documents", [...documents, newDoc]);
+      }
+    } catch (err) {
+      console.error("Error picking document:", err);
+      Toast.show({
+        type: "error",
+        text1: "Error picking document",
+        text2: "Please try again",
+      });
+    }
+  };
+
+  const handleAddTenant = (tenant: z.infer<typeof tenantSchema>) => {
+    setTenants((prev) => [...prev, tenant]);
+    setValue("tenants", [...tenants, tenant]);
+    setShowTenantForm(false);
+  };
+
   const createProperty = useMutation({
-    mutationFn: (data: PropertyFormData) =>
-      api.properties.create({
+    mutationFn: async (data: PropertyFormData) => {
+      // First, upload images and documents to get their URLs
+      const uploadedImages = await Promise.all(
+        (data.images || []).map(async (image) => {
+          // Implement your image upload logic here
+          // Return the uploaded image URL
+          return { url: "temporary-url" }; // Replace with actual upload
+        })
+      );
+      const uploadedDocuments = await Promise.all(
+        (data.documents || []).map(async (doc) => {
+          // Implement your document upload logic here
+          // Return the uploaded document URL
+          return { url: "temporary-url" }; // Replace with actual upload
+        })
+      );
+      return api.properties.create({
         ...data,
         propertyLocation: {
           create: {
             ...data.propertyLocation,
           },
         },
-      }),
+        tenants: {
+          create: data.tenants?.map((tenant) => ({
+            ...tenant,
+            phone: tenant.phone || "",
+          })),
+        },
+        images: uploadedImages,
+        documents: uploadedDocuments,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["properties"] });
       Toast.show({
@@ -139,296 +287,348 @@ export default function NewProperty() {
       });
       return;
     }
-
     createProperty.mutate(data);
   };
 
-  return (
-    <ScrollView>
-      <YStack f={1} p="$4" gap="$4">
-        <Card p="$4">
-          <YStack gap="$4">
-            <Text>Add New Property</Text>
-
-            <YStack gap="$2">
-              <Label htmlFor="name">Property Name</Label>
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0: // Basic Info
+        return (
+          <View className="gap-4">
+            <View className="gap-2">
+              <Text className="font-semibold mb-1">Property Name</Text>
               <Controller
                 control={control}
                 name="name"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    id="name"
-                    size="$4"
-                    bw={2}
+                  <TextInput
+                    className="h-12 border border-gray-300 rounded-lg px-4 bg-gray-50"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     placeholder="Enter property name"
-                    bc={errors.name ? "$red8" : "$colorTransparent"}
+                    placeholderTextColor="#888"
                   />
                 )}
               />
               {errors.name && (
-                <XStack gap="$2" ai="center" mt="$2">
-                  <AlertCircle size={16} col="$red10" />
-                  <Paragraph size="$2" col="$red10">
-                    {errors.name.message}
-                  </Paragraph>
-                </XStack>
+                <Text className="text-red-600 mt-1 text-sm">
+                  {errors.name.message}
+                </Text>
               )}
-            </YStack>
+            </View>
 
-            <YStack gap="$2">
-              <Label htmlFor="notes">Notes</Label>
+            <View className="gap-2">
+              <Text className="font-semibold mb-1">Property Type</Text>
+              <Controller
+                control={control}
+                name="type"
+                render={({ field: { onChange, value } }) => (
+                  <View className="flex-row flex-wrap gap-2">
+                    {PROPERTY_TYPES.map(({ value: typeValue, label, icon }) => (
+                      <TouchableOpacity
+                        key={typeValue}
+                        className={`flex-row items-center gap-2 px-4 py-2 rounded-lg border ${
+                          value === typeValue
+                            ? "border-blue-600 bg-blue-50"
+                            : "border-gray-200 bg-white"
+                        }`}
+                        onPress={() => onChange(typeValue)}
+                        activeOpacity={0.85}
+                      >
+                        {icon}
+                        <Text className="font-medium text-base">{label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              />
+            </View>
+
+            <View className="gap-2">
+              <Text className="font-semibold mb-1">Value</Text>
+              <Controller
+                control={control}
+                name="value"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className="h-12 border border-gray-300 rounded-lg px-4 bg-gray-50"
+                    value={value?.toString()}
+                    onChangeText={(text) =>
+                      onChange(text ? parseFloat(text) : undefined)
+                    }
+                    onBlur={onBlur}
+                    placeholder="Enter property value"
+                    keyboardType="numeric"
+                    placeholderTextColor="#888"
+                  />
+                )}
+              />
+            </View>
+
+            <View className="gap-2">
+              <Text className="font-semibold mb-1">Notes</Text>
               <Controller
                 control={control}
                 name="notes"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    id="notes"
-                    size="$4"
-                    bw={2}
+                  <TextInput
+                    className="h-12 border border-gray-300 rounded-lg px-4 bg-gray-50"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     placeholder="Enter property notes"
                     multiline
                     numberOfLines={3}
+                    placeholderTextColor="#888"
                   />
                 )}
               />
-            </YStack>
-
-            <YStack gap="$2">
-              <Label htmlFor="value">Value</Label>
-              <Controller
-                control={control}
-                name="value"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    id="value"
-                    size="$4"
-                    bw={2}
-                    value={value?.toString()}
-                    onChangeText={(text) =>
-                      onChange(parseFloat(text) || undefined)
-                    }
-                    onBlur={onBlur}
-                    placeholder="Enter property value"
-                    keyboardType="numeric"
-                  />
-                )}
-              />
-            </YStack>
-
-            <YStack gap="$2">
-              <Label>Property Type</Label>
-              <Controller
-                control={control}
-                name="type"
-                render={({ field: { onChange, value } }) => (
-                  <RadioGroup value={value} onValueChange={onChange} gap="$2">
-                    <XStack fw="wrap" gap="$2">
-                      {PROPERTY_TYPES.map(
-                        ({ value: typeValue, label, icon: Icon }) => (
-                          <RadioGroup.Item
-                            key={typeValue}
-                            value={typeValue}
-                            size="$4"
-                            p="$4"
-                            flexDirection="row"
-                            alignItems="center"
-                            bc={
-                              value === typeValue ? "$green10" : "$background"
-                            }
-                            bw={2}
-                            br="$4"
-                          >
-                            <Icon
-                              size={24}
-                              col={
-                                value === typeValue ? "$green10" : "$background"
-                              }
-                            />
-                            <Text
-                              ml="$2"
-                              col={
-                                value === typeValue ? "$green10" : "$background"
-                              }
-                              fow={value === typeValue ? "bold" : "normal"}
-                            >
-                              {label}
-                            </Text>
-                          </RadioGroup.Item>
-                        )
-                      )}
-                    </XStack>
-                  </RadioGroup>
-                )}
-              />
-            </YStack>
-
-            <YStack gap="$2">
-              <Label>Location</Label>
-              <MapLocationPicker
-                onLocationSelect={handleLocationSelect}
-                trigger={
-                  <Text>
-                    {control._formValues.propertyLocation?.address
-                      ? "Change Location"
-                      : "Select Location on Map"}
+            </View>
+          </View>
+        );
+      case 1: // Location
+        return (
+          <View className="gap-4">
+            <MapLocationPicker
+              onLocationSelect={handleLocationSelect}
+              trigger={
+                <View className="flex-row items-center gap-2">
+                  <MapPin size={20} color="#2563eb" />
+                  <Text className="text-blue-700 font-semibold">
+                    Select Location
                   </Text>
-                }
-              />
-            </YStack>
-
-            <YStack gap="$2">
-              <Label htmlFor="address">Address</Label>
-              <Controller
-                control={control}
-                name="propertyLocation.address"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    id="address"
-                    size="$4"
-                    bw={2}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    placeholder="Enter property address"
-                    multiline
-                    numberOfLines={3}
-                    bc={
-                      errors.propertyLocation?.address
-                        ? "$red8"
-                        : "$colorTransparent"
-                    }
-                    editable={false}
-                  />
-                )}
-              />
-              {errors.propertyLocation?.address && (
-                <XStack gap="$2" ai="center" mt="$2">
-                  <AlertCircle size={16} col="$red10" />
-                  <Paragraph size="$2" col="$red10">
-                    {errors.propertyLocation?.address?.message}
-                  </Paragraph>
-                </XStack>
-              )}
-            </YStack>
-
-            <XStack gap="$2">
-              <YStack f={1} gap="$2">
-                <Label htmlFor="city">City</Label>
-                <Controller
-                  control={control}
-                  name="propertyLocation.city"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <Input
-                      id="city"
-                      size="$4"
-                      bw={2}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Enter city"
-                      bc={
-                        errors.propertyLocation?.city
-                          ? "$red8"
-                          : "$colorTransparent"
-                      }
-                    />
-                  )}
-                />
-                {errors.propertyLocation?.city && (
-                  <XStack gap="$2" ai="center" mt="$2">
-                    <AlertCircle size={16} col="$red10" />
-                    <Paragraph size="$2" col="$red10">
-                      {errors.propertyLocation?.city?.message}
-                    </Paragraph>
-                  </XStack>
-                )}
-              </YStack>
-
-              <YStack f={1} gap="$2">
-                <Label htmlFor="country">Country</Label>
-                <Controller
-                  control={control}
-                  name="propertyLocation.country"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <Input
-                      id="country"
-                      size="$4"
-                      bw={2}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Enter country"
-                      bc={
-                        errors.propertyLocation?.country
-                          ? "$red8"
-                          : "$colorTransparent"
-                      }
-                    />
-                  )}
-                />
-                {errors.propertyLocation?.country && (
-                  <XStack gap="$2" ai="center" mt="$2">
-                    <AlertCircle size={16} col="$red10" />
-                    <Paragraph size="$2" col="$red10">
-                      {errors.propertyLocation?.country?.message}
-                    </Paragraph>
-                  </XStack>
-                )}
-              </YStack>
-            </XStack>
-
-            <YStack gap="$2">
-              <Label htmlFor="postalCode">Postal Code</Label>
-              <Controller
-                control={control}
-                name="propertyLocation.postalCode"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    id="postalCode"
-                    size="$4"
-                    bw={2}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    placeholder="Enter postal code"
-                    bc={
-                      errors.propertyLocation?.postalCode
-                        ? "$red8"
-                        : "$colorTransparent"
-                    }
-                  />
-                )}
-              />
-              {errors.propertyLocation?.postalCode && (
-                <XStack gap="$2" ai="center" mt="$2">
-                  <AlertCircle size={16} col="$red10" />
-                  <Paragraph size="$2" col="$red10">
-                    {errors.propertyLocation?.postalCode?.message}
-                  </Paragraph>
-                </XStack>
-              )}
-            </YStack>
-
-            <Button
-              size="$4"
-              theme="accent"
-              onPress={handleSubmit(onSubmit)}
-              disabled={isSubmitting || createProperty.isPending}
-              pressStyle={{ scale: 0.97 }}
-              o={isSubmitting || createProperty.isPending ? 0.5 : 1}
+                </View>
+              }
+            />
+            {watch("propertyLocation")?.address && (
+              <View className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <Text className="font-bold mb-1">Selected Location</Text>
+                <Text>{watch("propertyLocation")?.address}</Text>
+                <Text>
+                  {watch("propertyLocation")?.city},{" "}
+                  {watch("propertyLocation")?.country}{" "}
+                  {watch("propertyLocation")?.postalCode}
+                </Text>
+              </View>
+            )}
+          </View>
+        );
+      case 2: // Images
+        return (
+          <View className="gap-4">
+            <TouchableOpacity
+              className="flex-row items-center gap-2 px-4 h-12 rounded-lg bg-blue-600 justify-center mb-2"
+              onPress={pickImage}
+              activeOpacity={0.85}
             >
-              {createProperty.isPending ? "Creating..." : "Create Property"}
-            </Button>
-          </YStack>
-        </Card>
-      </YStack>
-      <Toast />
-    </ScrollView>
+              <Camera size={20} color="#fff" />
+              <Text className="text-white font-bold">Add Images</Text>
+            </TouchableOpacity>
+            <ScrollView horizontal className="flex-row gap-2">
+              {images.map((image, index) => (
+                <View
+                  key={index}
+                  className="relative w-36 h-36 rounded-xl border border-gray-200 bg-gray-100 mr-2 overflow-hidden"
+                >
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={{ width: 144, height: 144, borderRadius: 16 }}
+                  />
+                  <TouchableOpacity
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white justify-center items-center shadow"
+                    onPress={() => {
+                      const newImages = images.filter((_, i) => i !== index);
+                      setImages(newImages);
+                      setValue("images", newImages);
+                    }}
+                  >
+                    <X size={18} color="#dc2626" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        );
+      case 3: // Documents
+        return (
+          <View className="gap-4">
+            <TouchableOpacity
+              className="flex-row items-center gap-2 px-4 h-12 rounded-lg bg-blue-600 justify-center mb-2"
+              onPress={pickDocument}
+              activeOpacity={0.85}
+            >
+              <Upload size={20} color="#fff" />
+              <Text className="text-white font-bold">Add Documents</Text>
+            </TouchableOpacity>
+            <View className="gap-2">
+              {documents.map((doc, index) => (
+                <View
+                  key={index}
+                  className="flex-row items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4 mb-2"
+                >
+                  <Text className="flex-1 mr-2" numberOfLines={1}>
+                    {doc.name}
+                  </Text>
+                  <TouchableOpacity
+                    className="w-8 h-8 rounded-full bg-white justify-center items-center shadow"
+                    onPress={() => {
+                      const newDocs = documents.filter((_, i) => i !== index);
+                      setDocuments(newDocs);
+                      setValue("documents", newDocs);
+                    }}
+                  >
+                    <X size={18} color="#dc2626" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        );
+      case 4: // Tenants
+        return (
+          <View className="gap-4">
+            <TouchableOpacity
+              className="flex-row items-center gap-2 px-4 h-12 rounded-lg bg-blue-600 justify-center mb-2"
+              onPress={() => setShowTenantForm(true)}
+              activeOpacity={0.85}
+            >
+              <UserPlus size={20} color="#fff" />
+              <Text className="text-white font-bold">Add Tenant</Text>
+            </TouchableOpacity>
+            <View className="gap-2">
+              {tenants.map((tenant, index) => (
+                <View
+                  key={index}
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-2"
+                >
+                  <Text className="font-bold mb-1">{tenant.name}</Text>
+                  <Text>{tenant.email}</Text>
+                  {tenant.phone && <Text>{tenant.phone}</Text>}
+                  {tenant.leaseStartDate && (
+                    <Text>
+                      Lease: {tenant.leaseStartDate} - {tenant.leaseEndDate}
+                    </Text>
+                  )}
+                  {tenant.monthlyRent && (
+                    <Text>Rent: ${tenant.monthlyRent}/month</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+            <TenantForm
+              open={showTenantForm}
+              onOpenChange={setShowTenantForm}
+              onSubmit={handleAddTenant}
+            />
+          </View>
+        );
+      case 5: // Review
+        return (
+          <View className="gap-4">
+            <View className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <Text className="font-bold mb-2">Basic Information</Text>
+              <Text>Name: {watch("name")}</Text>
+              <Text>Type: {watch("type")}</Text>
+              {watch("value") && <Text>Value: ${watch("value")}</Text>}
+              {watch("notes") && <Text>Notes: {watch("notes")}</Text>}
+              <View className="my-2 border-b border-gray-200" />
+              <Text className="font-bold mb-2">Location</Text>
+              <Text>{watch("propertyLocation")?.address}</Text>
+              <Text>
+                {watch("propertyLocation")?.city},{" "}
+                {watch("propertyLocation")?.country}{" "}
+                {watch("propertyLocation")?.postalCode}
+              </Text>
+              <View className="my-2 border-b border-gray-200" />
+              <Text className="font-bold mb-2">Images</Text>
+              <Text>{images.length} images added</Text>
+              <View className="my-2 border-b border-gray-200" />
+              <Text className="font-bold mb-2">Documents</Text>
+              <Text>{documents.length} documents added</Text>
+              <View className="my-2 border-b border-gray-200" />
+              <Text className="font-bold mb-2">Tenants</Text>
+              <Text>{tenants.length} tenants added</Text>
+            </View>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <View className="flex-1 bg-white">
+      <ScrollView>
+        <View className="flex-1 p-4 gap-4">
+          {/* Step Progress */}
+          <View className="w-full h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
+            <View
+              className="h-2 bg-blue-600 rounded-full"
+              style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+            />
+          </View>
+
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-xl font-bold text-blue-700">
+              {STEPS[currentStep]}
+            </Text>
+            <Text className="text-gray-500">
+              Step {currentStep + 1} of {STEPS.length}
+            </Text>
+          </View>
+
+          <View className="rounded-2xl border border-gray-200 bg-white p-4 shadow">
+            {renderStepContent()}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View className="flex-row border-t border-gray-200 p-4 gap-4 justify-between bg-white">
+        <TouchableOpacity
+          className={`flex-1 h-12 rounded-lg justify-center items-center ${
+            currentStep === 0 ? "bg-gray-100" : "bg-blue-50"
+          }`}
+          disabled={currentStep === 0}
+          onPress={() => setCurrentStep((prev) => prev - 1)}
+          activeOpacity={currentStep === 0 ? 1 : 0.85}
+        >
+          <ChevronLeft
+            size={20}
+            color={currentStep === 0 ? "#a3a3a3" : "#2563eb"}
+          />
+          <Text
+            className={`font-bold ${
+              currentStep === 0 ? "text-gray-400" : "text-blue-700"
+            }`}
+          >
+            Back
+          </Text>
+        </TouchableOpacity>
+        {currentStep === STEPS.length - 1 ? (
+          <TouchableOpacity
+            className="flex-1 h-12 rounded-lg bg-blue-600 justify-center items-center ml-2"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            activeOpacity={isSubmitting ? 1 : 0.85}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="font-bold text-white">Create Property</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            className="flex-1 h-12 rounded-lg bg-blue-600 justify-center items-center ml-2"
+            onPress={() => setCurrentStep((prev) => prev + 1)}
+            activeOpacity={0.85}
+          >
+            <Text className="font-bold text-white">Next</Text>
+            <ChevronRight size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import { YStack, Card, Text, XStack, Button } from "tamagui";
-import { Bell, Calendar, FileText, AlertTriangle } from "@tamagui/lucide-icons";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface Alert {
   id: string;
@@ -20,15 +20,21 @@ export function AlertsPanel({ alerts, onAlertPress }: AlertsPanelProps) {
   const getAlertIcon = (type: Alert["type"]) => {
     switch (type) {
       case "lease":
-        return FileText;
+        return <Feather name="file-text" size={16} color="#2563eb" />;
       case "payment":
-        return Calendar;
+        return <Feather name="calendar" size={16} color="#2563eb" />;
       case "task":
-        return AlertTriangle;
+        return (
+          <MaterialCommunityIcons
+            name="alert-circle-outline"
+            size={16}
+            color="#f59e42"
+          />
+        );
       case "document":
-        return FileText;
+        return <Feather name="file-text" size={16} color="#2563eb" />;
       default:
-        return Bell;
+        return <Feather name="bell" size={16} color="#2563eb" />;
     }
   };
 
@@ -40,49 +46,38 @@ export function AlertsPanel({ alerts, onAlertPress }: AlertsPanelProps) {
   };
 
   return (
-    <Card bordered p="$4" bg="$background">
-      <YStack gap="$4">
-        <XStack ai="center" gap="$2">
-          <Bell size={20} />
-          <Text fow="bold" fos="$5">
-            Alerts & Reminders
-          </Text>
-        </XStack>
-
-        <YStack gap="$3">
-          {alerts.map((alert) => {
-            const Icon = getAlertIcon(alert.type);
-            return (
-              <Card
-                key={alert.id}
-                bordered
-                pressStyle={{ scale: 0.98 }}
-                onPress={() => onAlertPress(alert)}
-              >
-                <Card.Header padded>
-                  <XStack gap="$3" ai="center">
-                    <YStack
-                      w="$4"
-                      h="$4"
-                      ai="center"
-                      jc="center"
-                      br="$4"
-                      bg="$background"
-                    >
-                      <Icon size={16} />
-                    </YStack>
-                    <YStack f={1} gap="$1">
-                      <Text fow="bold">{alert.title}</Text>
-                      <Text fos="$2">{alert.description}</Text>
-                    </YStack>
-                    <Text fos="$2">{formatDate(alert.dueDate)}</Text>
-                  </XStack>
-                </Card.Header>
-              </Card>
-            );
-          })}
-        </YStack>
-      </YStack>
-    </Card>
+    <View className="border border-gray-200 rounded-2xl bg-white p-4 mb-4">
+      <View className="flex-row items-center mb-4 gap-2">
+        <Feather name="bell" size={20} color="#2563eb" />
+        <Text className="font-bold text-lg">Alerts & Reminders</Text>
+      </View>
+      <View>
+        {alerts.map((alert) => (
+          <TouchableOpacity
+            key={alert.id}
+            className="border border-gray-100 rounded-xl mb-3 bg-gray-50 active:scale-95"
+            onPress={() => onAlertPress(alert)}
+            activeOpacity={0.9}
+          >
+            <View className="flex-row items-center p-4 gap-3">
+              <View className="w-8 h-8 rounded-full bg-blue-50 justify-center items-center mr-2">
+                {getAlertIcon(alert.type)}
+              </View>
+              <View className="flex-1 gap-0.5">
+                <Text className="font-bold text-base mb-0.5">
+                  {alert.title}
+                </Text>
+                <Text className="text-gray-600 text-sm mb-0.5">
+                  {alert.description}
+                </Text>
+              </View>
+              <Text className="text-gray-400 text-xs ml-2">
+                {formatDate(alert.dueDate)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
   );
 }

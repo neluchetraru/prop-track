@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { YStack, Input, Button, Text, XStack } from "tamagui";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { authClient } from "@/lib/auth-client";
 import { Link } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -33,65 +33,77 @@ export default function Register() {
         type: "error",
         text1: "Registration Failed",
         text2:
-          error instanceof Error ? error.message : "Could not create account",
+          error instanceof Error ? error.message : "Could not create account ",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <YStack f={1} jc="center" p="$4" space="$4" bg="$background">
-      <YStack ai="center" mb="$8">
-        <Text fos="$8">Create Account</Text>
-      </YStack>
+  const isDisabled =
+    isLoading ||
+    !email ||
+    !password ||
+    !confirmPassword ||
+    password !== confirmPassword;
 
-      <Input
-        size="$4"
+  return (
+    <View className="flex-1 justify-center p-6 bg-white">
+      <View className="items-center mb-8">
+        <Text className="text-3xl font-bold">Create Account</Text>
+      </View>
+
+      <TextInput
+        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        editable={!isLoading}
+        placeholderTextColor="#888"
       />
 
-      <Input
-        size="$4"
+      <TextInput
+        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        editable={!isLoading}
+        placeholderTextColor="#888"
       />
 
-      <Input
-        size="$4"
+      <TextInput
+        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
+        editable={!isLoading}
+        placeholderTextColor="#888"
       />
 
-      <Button
-        size="$4"
+      <TouchableOpacity
+        className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-blue-600 ${
+          isDisabled ? "opacity-50" : ""
+        }`}
         onPress={handleRegister}
-        disabled={
-          isLoading ||
-          !email ||
-          !password ||
-          !confirmPassword ||
-          password !== confirmPassword
-        }
+        disabled={isDisabled}
+        activeOpacity={0.8}
       >
-        {isLoading ? "Creating Account..." : "Sign Up"}
-      </Button>
+        <Text className="text-white font-bold text-base">
+          {isLoading ? "Creating Account..." : "Sign Up"}
+        </Text>
+      </TouchableOpacity>
 
-      <XStack jc="center" mt="$4">
+      <View className="flex-row justify-center items-center mt-4">
         <Text>Already have an account? </Text>
         <Link href="/login" asChild>
-          <Text>Sign In</Text>
+          <Text className="text-blue-600 font-bold ml-1">Sign In</Text>
         </Link>
-      </XStack>
+      </View>
       <Toast />
-    </YStack>
+    </View>
   );
 }

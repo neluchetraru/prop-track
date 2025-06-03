@@ -1,25 +1,17 @@
 import { authClient } from "@/lib/auth-client";
-import type { Property } from "@prop-track/database";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  YStack,
-  XStack,
+  View,
   Text,
-  Button,
   ScrollView,
-  Paragraph,
-  Spinner,
-  H4,
-} from "tamagui";
-import { Home, Plus, Building2, MapPin } from "@tamagui/lucide-icons";
-import { RefreshControl } from "react-native";
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useAuthenticatedApi } from "@/hooks/useAuthenticatedApi";
-import { PropertyCard } from "@/components/PropertyCard";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { PropertyStats } from "@/components/PropertyStats";
-import { QuickActions } from "@/components/QuickActions";
+import { Feather } from "@expo/vector-icons";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -36,68 +28,100 @@ export default function Dashboard() {
   });
 
   const EmptyState = () => (
-    <YStack f={1} ai="center" jc="center" gap="$4" py="$8">
-      <YStack w="$12" h="$12" br="$8" ai="center" jc="center" mb="$2">
-        <Home size={48} />
-      </YStack>
-      <H4 ta="center">No properties yet</H4>
-      <Paragraph ta="center">Add your first property to get started</Paragraph>
-      <Button
-        size="$4"
+    <View className="flex-1 justify-center items-center py-16">
+      <View className="w-24 h-24 rounded-full bg-gray-100 justify-center items-center mb-4">
+        <Feather name="home" size={48} color="#2563eb" />
+      </View>
+      <Text className="text-xl font-bold text-center mb-2">
+        No properties yet
+      </Text>
+      <Text className="text-gray-500 text-center mb-4">
+        Add your first property to get started
+      </Text>
+      <TouchableOpacity
+        className="h-12 px-6 bg-blue-600 rounded-lg flex-row justify-center items-center"
         onPress={() => router.push("/properties/new")}
-        iconAfter={Plus}
+        activeOpacity={0.8}
       >
-        Add Property
-      </Button>
-    </YStack>
+        <Feather name="plus" size={20} color="#fff" />
+        <Text className="text-white font-bold text-base ml-2">
+          Add Property
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <YStack f={1} bg="$background">
-      <DashboardHeader />
-
+    <View className="flex-1 bg-white">
+      {/* DashboardHeader can be refactored separately if needed */}
+      {/* <DashboardHeader /> */}
       <ScrollView
-        f={1}
-        p="$4"
+        className="flex-1 p-4"
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
             onRefresh={refetch}
-            tintColor="$gray10"
+            tintColor="#2563eb"
           />
         }
       >
         {isLoading ? (
-          <YStack f={1} ai="center" jc="center" p="$8">
-            <Spinner size="large" color="$blue10" />
-          </YStack>
+          <View className="flex-1 justify-center items-center py-16">
+            <ActivityIndicator size="large" color="#2563eb" />
+          </View>
         ) : (
-          <YStack gap="$4">
-            <PropertyStats properties={properties || []} />
+          <View>
+            {/* PropertyStats can be refactored separately if needed */}
+            {/* <PropertyStats properties={properties || []} /> */}
             {properties && properties.length > 0 ? (
-              <YStack gap="$2">
-                <XStack ai="center" jc="space-between">
-                  <H4>My Properties</H4>
-                  <Button
-                    size="$3"
+              <View>
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className="text-lg font-bold">My Properties</Text>
+                  <TouchableOpacity
+                    className="h-10 px-4 bg-blue-600 rounded-lg flex-row justify-center items-center"
                     onPress={() => router.push("/properties/new")}
-                    icon={Plus}
+                    activeOpacity={0.8}
                   >
-                    Add
-                  </Button>
-                </XStack>
-
+                    <Feather name="plus" size={18} color="#fff" />
+                    <Text className="text-white font-bold text-base ml-2">
+                      Add
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 {properties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                  <View
+                    key={property.id}
+                    className="bg-white rounded-xl shadow border border-gray-100 p-4 mb-4"
+                  >
+                    <Text className="text-lg font-semibold mb-1">
+                      {property.name}
+                    </Text>
+                    <Text className="text-gray-500 mb-1 capitalize">
+                      {property.type.toLowerCase()}
+                    </Text>
+                    {property.propertyLocation && (
+                      <Text className="text-gray-400 mb-1">
+                        {property.propertyLocation.address}
+                      </Text>
+                    )}
+                    <TouchableOpacity
+                      className="mt-2 self-end"
+                      onPress={() => router.push(`/properties/${property.id}`)}
+                    >
+                      <Text className="text-blue-600 font-bold">
+                        View Details
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 ))}
-              </YStack>
+              </View>
             ) : (
               <EmptyState />
             )}
-          </YStack>
+          </View>
         )}
       </ScrollView>
-      <QuickActions />
-    </YStack>
+      {/* <QuickActions /> */}
+    </View>
   );
 }

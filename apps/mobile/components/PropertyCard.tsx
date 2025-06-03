@@ -1,30 +1,18 @@
 import type { Property } from "@prop-track/database";
-import {
-  Building2,
-  DollarSign,
-  Edit3,
-  Eye,
-  FileText,
-  Home,
-  MapPin,
-  Users,
-} from "@tamagui/lucide-icons";
 import { useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Paragraph,
-  SizableText,
-  Text,
-  XStack,
-  YStack,
-} from "tamagui";
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const PropertyTypeIcons = {
-  HOUSE: Home,
-  APARTMENT: Building2,
-  CONDO: Building2,
-} as const;
+  HOUSE: <Feather name="home" size={24} color="#2563eb" />,
+  APARTMENT: (
+    <MaterialCommunityIcons name="office-building" size={24} color="#2563eb" />
+  ),
+  CONDO: (
+    <MaterialCommunityIcons name="office-building" size={24} color="#2563eb" />
+  ),
+};
 
 interface PropertyCardProps {
   property: Property;
@@ -32,74 +20,74 @@ interface PropertyCardProps {
 
 export function PropertyCard({ property }: PropertyCardProps) {
   const router = useRouter();
-  const Icon =
-    PropertyTypeIcons[property.type as keyof typeof PropertyTypeIcons] || Home;
+  const Icon = PropertyTypeIcons[
+    property.type as keyof typeof PropertyTypeIcons
+  ] || <Feather name="home" size={24} color="#2563eb" />;
 
   return (
-    <Card
-      animation="bouncy"
-      scale={0.97}
-      hoverStyle={{ scale: 0.99 }}
-      pressStyle={{ scale: 0.95 }}
-      enterStyle={{ scale: 0.95, y: 10, opacity: 0 }}
-      exitStyle={{ scale: 0.95, y: 10, opacity: 0 }}
+    <TouchableOpacity
+      className="bg-white border border-gray-200 rounded-2xl mb-4 shadow-sm"
+      activeOpacity={0.95}
       onPress={() => router.push(`/properties/${property.id}`)}
     >
-      <Card.Header>
-        <YStack gap="$3">
-          <XStack gap="$4" ai="center">
-            <YStack w="$5" h="$5" ai="center" jc="center" br="$4">
-              <Icon size={24} />
-            </YStack>
-            <YStack f={1} gap="$1">
-              <SizableText size="$5">{property.name}</SizableText>
-              <XStack ai="center" gap="$2">
-                <MapPin size={14} />
-                <Paragraph size="$2">{property.address}</Paragraph>
-              </XStack>
-            </YStack>
-            <Card size="$2" bordered br="$4" borderWidth={1}>
-              <Text p="$2" transform="capitalize">
-                {property.type.toLowerCase()}
-              </Text>
-            </Card>
-          </XStack>
+      <View className="p-4">
+        <View className="flex-row items-center mb-3 gap-4">
+          <View className="w-12 h-12 rounded-full bg-blue-50 justify-center items-center mr-2">
+            {Icon}
+          </View>
+          <View className="flex-1 gap-0.5">
+            <Text className="font-bold text-lg mb-0.5">{property.name}</Text>
+            <View className="flex-row items-center gap-2 mb-0.5">
+              <Feather name="map-pin" size={14} color="#64748b" />
+              <Text className="text-gray-500 text-xs">{property.address}</Text>
+            </View>
+          </View>
+          <View className="px-2 py-1 border border-gray-200 rounded-lg bg-gray-50">
+            <Text className="capitalize text-xs text-gray-700">
+              {property.type.toLowerCase()}
+            </Text>
+          </View>
+        </View>
 
-          <XStack gap="$3" jc="space-between">
-            <XStack gap="$2" ai="center">
-              <DollarSign size={16} />
-              <Text fos="$3">{property.value?.toLocaleString()}</Text>
-            </XStack>
-            <XStack gap="$2" ai="center">
-              <Users size={16} />
-              <Text fos="$3">{property.occupancyStatus}</Text>
-            </XStack>
-          </XStack>
+        <View className="flex-row justify-between mb-3">
+          <View className="flex-row items-center gap-2">
+            <Feather name="dollar-sign" size={16} color="#22c55e" />
+            <Text className="text-gray-700 text-sm">
+              {property.value?.toLocaleString()}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <Feather name="users" size={16} color="#2563eb" />
+            <Text className="text-gray-700 text-sm">
+              {property.occupancyStatus}
+            </Text>
+          </View>
+        </View>
 
-          <XStack gap="$2" jc="flex-end">
-            <Button
-              size="$2"
-              circular
-              icon={Eye}
-              onPress={() => router.push(`/properties/${property.id}`)}
-            />
-            <Button
-              size="$2"
-              circular
-              icon={Edit3}
-              onPress={() => router.push(`/properties/${property.id}/edit`)}
-            />
-            <Button
-              size="$2"
-              circular
-              icon={FileText}
-              onPress={() =>
-                router.push(`/properties/${property.id}/documents`)
-              }
-            />
-          </XStack>
-        </YStack>
-      </Card.Header>
-    </Card>
+        <View className="flex-row justify-end gap-2 mt-2">
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 justify-center items-center"
+            onPress={() => router.push(`/properties/${property.id}`)}
+            activeOpacity={0.8}
+          >
+            <Feather name="eye" size={18} color="#2563eb" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 justify-center items-center"
+            onPress={() => router.push(`/properties/${property.id}/edit`)}
+            activeOpacity={0.8}
+          >
+            <Feather name="edit-3" size={18} color="#2563eb" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 justify-center items-center"
+            onPress={() => router.push(`/properties/${property.id}/documents`)}
+            activeOpacity={0.8}
+          >
+            <Feather name="file-text" size={18} color="#2563eb" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }

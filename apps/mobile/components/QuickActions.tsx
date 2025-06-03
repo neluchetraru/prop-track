@@ -1,6 +1,6 @@
 import React from "react";
-import { YStack, Button, Sheet, Text, XStack } from "tamagui";
-import { Plus, Upload, Calendar, FileText } from "@tamagui/lucide-icons";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 export function QuickActions() {
@@ -9,7 +9,7 @@ export function QuickActions() {
 
   const actions = [
     {
-      icon: Plus,
+      icon: <Feather name="plus" size={22} color="#2563eb" />,
       label: "Add New Property",
       onPress: () => {
         setShowActions(false);
@@ -17,7 +17,7 @@ export function QuickActions() {
       },
     },
     {
-      icon: Upload,
+      icon: <Feather name="upload" size={22} color="#2563eb" />,
       label: "Upload Document",
       onPress: () => {
         setShowActions(false);
@@ -25,7 +25,7 @@ export function QuickActions() {
       },
     },
     {
-      icon: Calendar,
+      icon: <Feather name="calendar" size={22} color="#2563eb" />,
       label: "Add Task / Reminder",
       onPress: () => {
         setShowActions(false);
@@ -36,46 +36,51 @@ export function QuickActions() {
 
   return (
     <>
-      <Button
-        size="$6"
-        circular
-        icon={Plus}
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        className="w-16 h-16 rounded-full bg-blue-600 justify-center items-center absolute bottom-6 right-6 shadow-lg z-50"
         onPress={() => setShowActions(true)}
-        pos="absolute"
-        b="$4"
-        r="$4"
-        elevation={10}
-      />
-
-      <Sheet
-        modal
-        open={showActions}
-        onOpenChange={setShowActions}
-        snapPointsMode="fit"
-        position={0}
-        dismissOnSnapToBottom
-        zIndex={100_000}
+        activeOpacity={0.85}
+        style={{ elevation: 10 }}
       >
-        <Sheet.Overlay bg="$shadow6" />
-        <Sheet.Handle />
-        <Sheet.Frame>
-          <YStack p="$4" gap="$3">
-            <Text fow="bold" fos="$5">
+        <Feather name="plus" size={32} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Quick Actions Modal */}
+      <Modal
+        visible={showActions}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowActions(false)}
+      >
+        <View className="flex-1 justify-end items-center bg-black/40">
+          <View className="w-full max-w-xl bg-white rounded-t-2xl p-6">
+            <Text className="font-bold text-lg mb-4 text-center text-blue-700">
               Quick Actions
             </Text>
             {actions.map((action, index) => (
-              <Button
+              <TouchableOpacity
                 key={index}
-                size="$4"
-                icon={action.icon}
+                className="flex-row items-center gap-3 px-4 h-14 rounded-lg bg-gray-100 mb-3"
                 onPress={action.onPress}
+                activeOpacity={0.85}
               >
-                {action.label}
-              </Button>
+                {action.icon}
+                <Text className="font-semibold text-base text-gray-800">
+                  {action.label}
+                </Text>
+              </TouchableOpacity>
             ))}
-          </YStack>
-        </Sheet.Frame>
-      </Sheet>
+            <TouchableOpacity
+              className="mt-2 px-4 h-12 rounded-lg bg-gray-200 justify-center items-center"
+              onPress={() => setShowActions(false)}
+              activeOpacity={0.8}
+            >
+              <Text className="font-bold text-gray-700">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

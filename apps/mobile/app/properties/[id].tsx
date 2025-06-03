@@ -1,38 +1,33 @@
 import React from "react";
 import {
-  YStack,
-  XStack,
+  View,
   Text,
-  Button,
-  Card,
   ScrollView,
-  Paragraph,
-  Spinner,
-  H4,
-  Separator,
-} from "tamagui";
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthenticatedApi } from "@/hooks/useAuthenticatedApi";
+import Toast from "react-native-toast-message";
+import { Alert } from "react-native";
 import {
   Home,
   Building2,
+  Building,
   MapPin,
-  Calendar,
-  ArrowLeft,
   Edit3,
   Trash2,
-  Building,
-} from "@tamagui/lucide-icons";
-import { Alert } from "react-native";
-import Toast from "react-native-toast-message";
+  ArrowLeft,
+  Calendar,
+} from "lucide-react-native";
 
 const PropertyTypeIcons = {
-  HOUSE: Home,
-  APARTMENT: Building2,
-  VILLA: Building,
-  COMMERCIAL: Building,
-} as const;
+  HOUSE: <Home size={32} color="#2563eb" />,
+  APARTMENT: <Building2 size={32} color="#2563eb" />,
+  VILLA: <Building size={32} color="#2563eb" />,
+  COMMERCIAL: <Building size={32} color="#2563eb" />,
+};
 
 export default function PropertyDetails() {
   const { id } = useLocalSearchParams();
@@ -49,10 +44,7 @@ export default function PropertyDetails() {
       "Delete Property",
       "Are you sure you want to delete this property? This action cannot be undone.",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
@@ -77,17 +69,6 @@ export default function PropertyDetails() {
     );
   };
 
-  if (isLoading || !property) {
-    return (
-      <YStack f={1} ai="center" jc="center">
-        <Spinner size="large" color="$green10" />
-      </YStack>
-    );
-  }
-
-  const Icon =
-    PropertyTypeIcons[property.type as keyof typeof PropertyTypeIcons] || Home;
-
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -104,138 +85,132 @@ export default function PropertyDetails() {
     }).format(value);
   };
 
+  if (isLoading || !property) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#22c55e" />
+      </View>
+    );
+  }
+
+  const IconComponent = PropertyTypeIcons[
+    property.type as keyof typeof PropertyTypeIcons
+  ] || <Home size={32} color="#2563eb" />;
+
   return (
-    <ScrollView>
-      <YStack f={1} gap="$4">
-        <XStack p="$4" ai="center" gap="$3">
-          <Button
-            size="$3"
-            circular
-            icon={ArrowLeft}
+    <ScrollView className="flex-1 bg-white">
+      <View className="p-6">
+        {/* Header Actions */}
+        <View className="flex-row items-center justify-between mb-6">
+          <TouchableOpacity
+            className="p-2 rounded-full bg-gray-100 mr-2"
             onPress={() => router.back()}
-          />
-          <Text fos="$7" fow="bold" f={1}>
+          >
+            <ArrowLeft size={24} color="#222" />
+          </TouchableOpacity>
+          <Text className="flex-1 text-2xl font-bold text-center">
             Property Details
           </Text>
-          <XStack gap="$2">
-            <Button
-              size="$3"
-              circular
-              icon={Edit3}
+          <View className="flex-row">
+            <TouchableOpacity
+              className="p-2 rounded-full bg-gray-100 mr-2"
               onPress={() => router.push(`/properties/${id}/edit`)}
-            />
-            <Button
-              size="$3"
-              circular
-              icon={Trash2}
+            >
+              <Edit3 size={22} color="#222" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="p-2 rounded-full bg-red-100"
               onPress={handleDelete}
-              theme="error"
-            />
-          </XStack>
-        </XStack>
+            >
+              <Trash2 size={22} color="#dc2626" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        <Separator />
-
-        <YStack px="$4" gap="$4">
-          <Card p="$4">
-            <YStack gap="$4">
-              <XStack gap="$4" ai="center">
-                <YStack w="$7" h="$7" ai="center" jc="center" br="$4">
-                  <Icon size={32} />
-                </YStack>
-                <YStack f={1}>
-                  <H4 fos="$6">{property.name}</H4>
-                  {property.propertyLocation && (
-                    <XStack ai="center" gap="$2" mt="$2">
-                      <MapPin size={16} />
-                      <Paragraph size="$3">
-                        {property.propertyLocation.address}
-                      </Paragraph>
-                    </XStack>
-                  )}
-                </YStack>
-              </XStack>
-
-              <Separator />
-
-              <YStack gap="$4">
-                <XStack ai="center" gap="$2">
-                  <Text fos="$3">Type:</Text>
-                  <Card bordered br="$4">
-                    <Text p="$2" fow="500" transform="capitalize">
-                      {property.type.toLowerCase()}
-                    </Text>
-                  </Card>
-                </XStack>
-
-                {property.value && (
-                  <XStack ai="center" gap="$2">
-                    <Text fos="$3">Value:</Text>
-                    <Card bordered br="$4">
-                      <Text p="$2" fow="500">
-                        {formatCurrency(property.value)}
-                      </Text>
-                    </Card>
-                  </XStack>
-                )}
-
-                {property.notes && (
-                  <YStack gap="$2">
-                    <Text fos="$3">Notes:</Text>
-                    <Card bordered br="$4" p="$2">
-                      <Paragraph size="$3">{property.notes}</Paragraph>
-                    </Card>
-                  </YStack>
-                )}
-
-                {property.propertyLocation && (
-                  <YStack gap="$2">
-                    <Text fos="$3">Location:</Text>
-                    <Card bordered br="$4" p="$2">
-                      <Paragraph size="$3">
-                        {property.propertyLocation.address}
-                      </Paragraph>
-                      <Paragraph size="$3">
-                        {property.propertyLocation.city},{" "}
-                        {property.propertyLocation.country}{" "}
-                        {property.propertyLocation.postalCode}
-                      </Paragraph>
-                    </Card>
-                  </YStack>
-                )}
-
-                <XStack ai="center" gap="$2">
-                  <Calendar size={16} />
-                  <Text fos="$3">
-                    Added on {formatDate(property.createdAt)}
+        {/* Property Card */}
+        <View className="bg-white rounded-2xl shadow border border-gray-100 p-6 mb-6">
+          <View className="flex-row items-center mb-4">
+            <View className="w-14 h-14 rounded-full bg-gray-100 justify-center items-center mr-4">
+              {IconComponent}
+            </View>
+            <View className="flex-1">
+              <Text className="text-xl font-bold mb-1">{property.name}</Text>
+              {property.propertyLocation && (
+                <View className="flex-row items-center">
+                  <MapPin size={16} color="#888" />
+                  <Text className="ml-2 text-gray-600">
+                    {property.propertyLocation.address}
                   </Text>
-                </XStack>
+                </View>
+              )}
+            </View>
+          </View>
 
-                <XStack ai="center" gap="$2">
-                  <Calendar size={16} />
-                  <Text fos="$3">
-                    Last updated {formatDate(property.updatedAt)}
-                  </Text>
-                </XStack>
-              </YStack>
-            </YStack>
-          </Card>
+          <View className="border-t border-gray-200 my-4" />
 
-          <Card elevate bordered p="$4" theme="accent">
-            <YStack gap="$2">
-              <H4 fos="$5">Statistics</H4>
-              <Paragraph fos="$3">Coming soon...</Paragraph>
-            </YStack>
-          </Card>
+          <View className="mb-2 flex-row items-center">
+            <Text className="text-gray-500 w-24">Type:</Text>
+            <Text className="capitalize font-semibold">
+              {property.type.toLowerCase()}
+            </Text>
+          </View>
+          {property.value && (
+            <View className="mb-2 flex-row items-center">
+              <Text className="text-gray-500 w-24">Value:</Text>
+              <Text className="font-semibold">
+                {formatCurrency(property.value)}
+              </Text>
+            </View>
+          )}
+          {property.notes && (
+            <View className="mb-2">
+              <Text className="text-gray-500 mb-1">Notes:</Text>
+              <View className="bg-gray-50 rounded p-2">
+                <Text className="text-gray-700">{property.notes}</Text>
+              </View>
+            </View>
+          )}
+          {property.propertyLocation && (
+            <View className="mb-2">
+              <Text className="text-gray-500 mb-1">Location:</Text>
+              <View className="bg-gray-50 rounded p-2">
+                <Text className="text-gray-700">
+                  {property.propertyLocation.address}
+                </Text>
+                <Text className="text-gray-700">
+                  {property.propertyLocation.city},{" "}
+                  {property.propertyLocation.country}{" "}
+                  {property.propertyLocation.postalCode}
+                </Text>
+              </View>
+            </View>
+          )}
+          <View className="mb-2 flex-row items-center">
+            <Calendar size={16} color="#888" />
+            <Text className="ml-2 text-gray-500">
+              Added on {formatDate(property.createdAt)}
+            </Text>
+          </View>
+          <View className="mb-2 flex-row items-center">
+            <Calendar size={16} color="#888" />
+            <Text className="ml-2 text-gray-500">
+              Last updated {formatDate(property.updatedAt)}
+            </Text>
+          </View>
+        </View>
 
-          <Card elevate bordered p="$4" theme="accent">
-            <YStack gap="$2">
-              <H4 fos="$5">Documents</H4>
-              <Paragraph fos="$3">Coming soon...</Paragraph>
-            </YStack>
-          </Card>
-        </YStack>
-      </YStack>
+        {/* Statistics Card */}
+        <View className="bg-white rounded-2xl shadow border border-gray-100 p-6 mb-6">
+          <Text className="text-lg font-bold mb-2">Statistics</Text>
+          <Text className="text-gray-500">Coming soon...</Text>
+        </View>
+
+        {/* Documents Card */}
+        <View className="bg-white rounded-2xl shadow border border-gray-100 p-6 mb-6">
+          <Text className="text-lg font-bold mb-2">Documents</Text>
+          <Text className="text-gray-500">Coming soon...</Text>
+        </View>
+      </View>
       <Toast />
     </ScrollView>
   );
