@@ -19,7 +19,7 @@ export default function Login() {
       });
       console.log(result);
       console.log("Login successful, session:", await authClient.getSession());
-      router.replace("/(tabs)/home");
+      router.replace("/(authenticated)/home");
     } catch (error) {
       console.error("Login failed:", error);
       Toast.show({
@@ -40,7 +40,7 @@ export default function Login() {
         provider: "google",
       });
       console.log("Google login successful");
-      router.replace("/(tabs)/home");
+      router.replace("/(authenticated)/home");
     } catch (error) {
       Toast.show({
         type: "error",

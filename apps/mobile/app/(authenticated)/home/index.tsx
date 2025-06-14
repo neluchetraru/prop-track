@@ -40,7 +40,7 @@ export default function Dashboard() {
       </Text>
       <TouchableOpacity
         className="h-12 px-6 bg-blue-600 rounded-lg flex-row justify-center items-center"
-        onPress={() => router.push("/properties/new")}
+        onPress={() => router.push("/(authenticated)/home/properties/new")}
         activeOpacity={0.8}
       >
         <Feather name="plus" size={20} color="#fff" />
@@ -79,7 +79,9 @@ export default function Dashboard() {
                   <Text className="text-lg font-bold">My Properties</Text>
                   <TouchableOpacity
                     className="h-10 px-4 bg-blue-600 rounded-lg flex-row justify-center items-center"
-                    onPress={() => router.push("/properties/new")}
+                    onPress={() =>
+                      router.push("/(authenticated)/home/properties/new")
+                    }
                     activeOpacity={0.8}
                   >
                     <Feather name="plus" size={18} color="#fff" />
