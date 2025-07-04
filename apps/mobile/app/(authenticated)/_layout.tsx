@@ -1,21 +1,24 @@
 import { Drawer } from "expo-router/drawer";
-import React from "react";
-import { View, Text, TouchableOpacity, Switch, Image } from "react-native";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { authClient } from "@/lib/auth-client";
 import { useColorScheme } from "@/lib/useColorScheme";
+import type { DrawerContentComponentProps } from "@react-navigation/drawer";
 
-function CustomDrawerContent({ navigation }) {
-  const router = useRouter();
+function CustomDrawerContent({ navigation }: DrawerContentComponentProps) {
   const { data: session } = authClient.useSession();
   const { colorScheme, isDarkColorScheme, toggleColorScheme } =
     useColorScheme();
   const user = session?.user;
-  console.log(user);
-  if (!user) {
-    router.replace("/_auth/login");
-  }
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900 p-6">
@@ -91,7 +94,7 @@ function CustomDrawerContent({ navigation }) {
         className="flex-row items-center gap-3 px-4 h-12 rounded-lg bg-red-100 dark:bg-red-800"
         onPress={async () => {
           await authClient.signOut();
-          router.replace("/_auth/login");
+          // No need to redirect here, the layout guard will handle it
         }}
         activeOpacity={0.85}
       >
@@ -105,6 +108,25 @@ function CustomDrawerContent({ navigation }) {
 }
 
 export default function AuthenticatedLayout() {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
+  React.useEffect(() => {
+    if (!isPending && !user) {
+      router.replace("/_auth/login");
+    }
+  }, [isPending, user, router]);
+
+  if (isPending || !user) {
+    // Optionally show a loading spinner here
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
   return (
     <Drawer drawerContent={CustomDrawerContent}>
       <Drawer.Screen

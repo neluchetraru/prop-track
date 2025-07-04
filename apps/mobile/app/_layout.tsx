@@ -3,11 +3,11 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import Toast from "react-native-toast-message";
 import "./globals.css";
 import { Platform } from "react-native";
 import React from "react";
 import { PortalHost } from "@rn-primitives/portal";
+import ToastManager from "toastify-react-native";
 
 const queryClient = new QueryClient();
 export {
@@ -41,7 +41,7 @@ export default function RootLayout() {
     <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }} />
-        <Toast />
+        <ToastManager />
         <PortalHost />
       </QueryClientProvider>
     </ThemeProvider>

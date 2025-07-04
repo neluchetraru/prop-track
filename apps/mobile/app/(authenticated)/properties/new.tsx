@@ -18,7 +18,7 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-import Toast from "react-native-toast-message";
+import { Toast } from "toastify-react-native";
 import { z } from "zod";
 import BasicInfoStep from "@/app/(authenticated)/properties/steps/BasicInfoStep";
 import DocumentsStep from "@/app/(authenticated)/properties/steps/DocumentsStep";
@@ -203,10 +203,7 @@ export default function NewProperty() {
 
   // Error handler for form submit
   const onError = (formErrors: FieldErrors<PropertyFormData>) => {
-    Toast.show({
-      type: "error",
-      text1: "Please fix errors before submitting. See highlighted steps.",
-    });
+    Toast.error("Please fix errors before submitting. See highlighted steps.");
     // Scroll to first error bubble
     const firstErrorIdx = getFirstErrorStep(formErrors);
     if (firstErrorIdx !== null && scrollViewRef.current) {
@@ -260,18 +257,11 @@ export default function NewProperty() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["properties"] });
-      Toast.show({
-        type: "success",
-        text1: "Property created successfully",
-      });
+      Toast.success("Property created successfully");
       router.back();
     },
     onError: (error: Error) => {
-      Toast.show({
-        type: "error",
-        text1: "Failed to create property",
-        text2: error.message,
-      });
+      Toast.error("Failed to create property", error.message);
     },
   });
 

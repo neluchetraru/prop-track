@@ -3,9 +3,11 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import { Link, router } from "expo-router";
-import Toast from "react-native-toast-message";
+import { Toast } from "toastify-react-native";
 import { TextInput } from "react-native";
 import { z } from "zod";
+import { Mail, Lock } from "lucide-react-native";
+import { Image as RNImage } from "react-native";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -42,53 +44,53 @@ export default function Register() {
       });
       console.log(result);
       if (result?.error) {
-        Toast.show({
-          type: "error",
-          text1: "Registration Failed",
-          text2: result.error.message || "Could not create account",
-        });
+        Toast.error(result.error.message || "Could not create account");
         return;
       }
-      Toast.show({
-        type: "success",
-        text1: "Registration Successful",
-        text2: "Please sign in with your credentials",
-      });
+      Toast.success("Registration Successful");
       router.replace("/(authenticated)/home");
       reset();
     } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Registration Failed",
-        text2:
-          error instanceof Error ? error.message : "Could not create account ",
-      });
+      const message =
+        error instanceof Error ? error.message : "Could not create account ";
+      Toast.error(message || "Registration Failed");
     }
+  };
+
+  // Placeholder for Google sign up
+  const handleGoogleSignUp = async () => {
+    // TODO: Implement Google sign up logic
+    // For now, just show a toast or do nothing
   };
 
   return (
     <View className="flex-1 justify-center p-6 bg-white">
       <View className="items-center mb-8">
         <Text className="text-3xl font-bold">Create Account</Text>
+        <Text className="text-gray-500 mt-1 text-base">
+          Sign up to get started
+        </Text>
       </View>
-
       {/* Email */}
       <Controller
         control={control}
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
           <>
-            <TextInput
-              className="h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50"
-              placeholder="Email"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              editable={!isSubmitting}
-              placeholderTextColor="#888"
-            />
+            <View className="flex-row items-center h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50">
+              <Mail size={20} color="#888" style={{ marginRight: 8 }} />
+              <TextInput
+                className="flex-1"
+                placeholder="Email"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                editable={!isSubmitting}
+                placeholderTextColor="#888"
+              />
+            </View>
             {errors.email && (
               <Text className="text-red-500 mb-2 ml-1 text-xs">
                 {errors.email.message}
@@ -97,7 +99,6 @@ export default function Register() {
           </>
         )}
       />
-
       {/* Password */}
       <Controller
         control={control}
@@ -111,16 +112,19 @@ export default function Register() {
         }}
         render={({ field: { onChange, onBlur, value } }) => (
           <>
-            <TextInput
-              className="h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50"
-              placeholder="Password"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              secureTextEntry
-              editable={!isSubmitting}
-              placeholderTextColor="#888"
-            />
+            <View className="flex-row items-center h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50">
+              <Lock size={20} color="#888" style={{ marginRight: 8 }} />
+              <TextInput
+                className="flex-1"
+                placeholder="Password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                editable={!isSubmitting}
+                placeholderTextColor="#888"
+              />
+            </View>
             {errors.password && (
               <Text className="text-red-500 mb-2 ml-1 text-xs">
                 {errors.password.message}
@@ -132,7 +136,6 @@ export default function Register() {
           </>
         )}
       />
-
       {/* Confirm Password */}
       <Controller
         control={control}
@@ -143,16 +146,19 @@ export default function Register() {
         }}
         render={({ field: { onChange, onBlur, value } }) => (
           <>
-            <TextInput
-              className="h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50"
-              placeholder="Confirm Password"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              secureTextEntry
-              editable={!isSubmitting}
-              placeholderTextColor="#888"
-            />
+            <View className="flex-row items-center h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50">
+              <Lock size={20} color="#888" style={{ marginRight: 8 }} />
+              <TextInput
+                className="flex-1"
+                placeholder="Confirm Password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                editable={!isSubmitting}
+                placeholderTextColor="#888"
+              />
+            </View>
             {errors.confirmPassword && (
               <Text className="text-red-500 mb-2 ml-1 text-xs">
                 {errors.confirmPassword.message}
@@ -161,13 +167,26 @@ export default function Register() {
           </>
         )}
       />
-
+      {/* Disable Sign Up if any field is empty or there are errors */}
       <TouchableOpacity
         className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-blue-600 ${
-          isSubmitting ? "opacity-50" : ""
+          isSubmitting ||
+          !watch("email") ||
+          !watch("password") ||
+          !watch("confirmPassword") ||
+          errors.email ||
+          errors.password ||
+          errors.confirmPassword
+            ? "opacity-50"
+            : ""
         }`}
         onPress={handleSubmit(onSubmit)}
-        disabled={isSubmitting}
+        disabled={
+          isSubmitting ||
+          !watch("email") ||
+          !watch("password") ||
+          !watch("confirmPassword")
+        }
         activeOpacity={0.8}
       >
         {isSubmitting ? (
@@ -176,14 +195,32 @@ export default function Register() {
           <Text className="text-white font-bold text-base">Sign Up</Text>
         )}
       </TouchableOpacity>
-
+      {/* Divider with OR */}
+      <View className="flex-row items-center mb-4">
+        <View className="flex-1 h-px bg-gray-200" />
+        <Text className="mx-2 text-gray-400 font-semibold">or</Text>
+        <View className="flex-1 h-px bg-gray-200" />
+      </View>
+      <TouchableOpacity
+        className="h-12 rounded-xl flex-row justify-center items-center mb-2 bg-white border border-gray-300 shadow-sm"
+        onPress={handleGoogleSignUp}
+        disabled={isSubmitting}
+        activeOpacity={0.8}
+      >
+        <RNImage
+          source={require("@/assets/images/google-logo.png")}
+          style={{ width: 20, height: 20, marginRight: 8 }}
+        />
+        <Text className="text-gray-900 font-bold text-base">
+          Continue with Google
+        </Text>
+      </TouchableOpacity>
       <View className="flex-row justify-center items-center mt-4">
         <Text>Already have an account? </Text>
         <Link href="/_auth/login" asChild>
           <Text className="text-blue-600 font-bold ml-1">Sign In</Text>
         </Link>
       </View>
-      <Toast />
     </View>
   );
 }

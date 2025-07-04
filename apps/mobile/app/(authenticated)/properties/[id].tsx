@@ -9,7 +9,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthenticatedApi } from "@/hooks/useAuthenticatedApi";
-import Toast from "react-native-toast-message";
+import { Toast } from "toastify-react-native";
 import { Alert } from "react-native";
 import {
   Home,
@@ -51,17 +51,10 @@ export default function PropertyDetails() {
           onPress: async () => {
             try {
               await api.properties.delete(id as string);
-              Toast.show({
-                type: "success",
-                text1: "Property deleted successfully",
-              });
+              Toast.success("Property deleted successfully");
               router.replace("/(authenticated)/home");
             } catch (error) {
-              Toast.show({
-                type: "error",
-                text1: "Failed to delete property",
-                text2: error instanceof Error ? error.message : "Unknown error",
-              });
+              Toast.error("Failed to delete property");
             }
           },
         },
@@ -211,7 +204,6 @@ export default function PropertyDetails() {
           <Text className="text-gray-500">Coming soon...</Text>
         </View>
       </View>
-      <Toast />
     </ScrollView>
   );
 }
