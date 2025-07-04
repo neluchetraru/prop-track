@@ -3,6 +3,7 @@ import { expoClient } from "@better-auth/expo/client";
 import * as SecureStore from "expo-secure-store";
 
 const baseURL = process.env.EXPO_PUBLIC_API_URL;
+console.log(baseURL);
 const authClient = createAuthClient({
     baseURL: `${baseURL}/auth`,
     plugins: [

@@ -1,45 +1,69 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+import { useForm, Controller } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import { Link, router } from "expo-router";
 import Toast from "react-native-toast-message";
+import { TextInput } from "react-native";
+import { z } from "zod";
 
+const formSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<FormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    console.log("Starting login attempt...");
+  const onSubmit = async (data: FormData) => {
     try {
-      setIsLoading(true);
       const result = await authClient.signIn.email({
-        email,
-        password,
+        email: data.email,
+        password: data.password,
       });
-      console.log(result);
-      console.log("Login successful, session:", await authClient.getSession());
+      if (result?.error) {
+        Toast.show({
+          type: "error",
+          text1: "Login Failed",
+          text2: result.error.message || "Invalid email or password",
+        });
+        return;
+      }
       router.replace("/(authenticated)/home");
     } catch (error) {
-      console.error("Login failed:", error);
       Toast.show({
         type: "error",
         text1: "Login Failed",
         text2:
           error instanceof Error ? error.message : "Invalid email or password",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      setIsLoading(true);
+      // Optionally, you can set a loading state for Google login separately
       await authClient.signIn.social({
         provider: "google",
       });
-      console.log("Google login successful");
       router.replace("/(authenticated)/home");
     } catch (error) {
       Toast.show({
@@ -47,9 +71,6 @@ export default function Login() {
         text1: "Google Sign In Failed",
         text2: "Unable to sign in with Google",
       });
-      console.error("Google login failed:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -59,46 +80,87 @@ export default function Login() {
         <Text className="text-3xl font-bold">Welcome Back</Text>
       </View>
 
-      <TextInput
-        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        editable={!isLoading}
-        placeholderTextColor="#888"
+      {/* Email */}
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              className="h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50"
+              placeholder="Email"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!isSubmitting}
+              placeholderTextColor="#888"
+            />
+            {errors.email && (
+              <Text className="text-red-500 mb-2 ml-1 text-xs">
+                {errors.email.message}
+              </Text>
+            )}
+          </>
+        )}
       />
 
-      <TextInput
-        className="h-12 border border-gray-300 rounded-lg px-4 mb-4 bg-gray-50"
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        editable={!isLoading}
-        placeholderTextColor="#888"
+      {/* Password */}
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <View className="flex-row items-center">
+              <TextInput
+                className="flex-1 h-12 border border-gray-300 rounded-lg px-4 mb-1 bg-gray-50"
+                placeholder="Password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry={!showPassword}
+                editable={!isSubmitting}
+                placeholderTextColor="#888"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword((prev) => !prev)}
+                style={{ marginLeft: 8 }}
+                disabled={isSubmitting}
+              >
+                <Text className="text-blue-600 font-bold text-xs">
+                  {showPassword ? "Hide" : "Show"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {errors.password && (
+              <Text className="text-red-500 mb-2 ml-1 text-xs">
+                {errors.password.message}
+              </Text>
+            )}
+          </>
+        )}
       />
 
       <TouchableOpacity
         className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-blue-600 ${
-          isLoading || !email || !password ? "opacity-50" : ""
+          isSubmitting ? "opacity-50" : ""
         }`}
-        onPress={handleLogin}
-        disabled={isLoading || !email || !password}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
         activeOpacity={0.8}
       >
-        <Text className="text-white font-bold text-base">
-          {isLoading ? "Signing in..." : "Sign In"}
-        </Text>
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text className="text-white font-bold text-base">Sign In</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
-        className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-white border border-gray-300 ${
-          isLoading ? "opacity-50" : ""
-        }`}
+        className={`h-12 rounded-lg flex-row justify-center items-center mb-4 bg-white border border-gray-300`}
         onPress={handleGoogleLogin}
-        disabled={isLoading}
+        disabled={isSubmitting}
         activeOpacity={0.8}
       >
         <Image

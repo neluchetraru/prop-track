@@ -7,6 +7,7 @@ import Toast from "react-native-toast-message";
 import "./globals.css";
 import { Platform } from "react-native";
 import React from "react";
+import { PortalHost } from "@rn-primitives/portal";
 
 const queryClient = new QueryClient();
 export {
@@ -41,6 +42,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }} />
         <Toast />
+        <PortalHost />
       </QueryClientProvider>
     </ThemeProvider>
   );

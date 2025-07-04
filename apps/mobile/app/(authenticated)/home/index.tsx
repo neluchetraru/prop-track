@@ -40,7 +40,7 @@ export default function Dashboard() {
       </Text>
       <TouchableOpacity
         className="h-12 px-6 bg-blue-600 rounded-lg flex-row justify-center items-center"
-        onPress={() => router.push("/(authenticated)/home/properties/new")}
+        onPress={() => router.push("/(authenticated)/properties/new")}
         activeOpacity={0.8}
       >
         <Feather name="plus" size={20} color="#fff" />
@@ -80,7 +80,7 @@ export default function Dashboard() {
                   <TouchableOpacity
                     className="h-10 px-4 bg-blue-600 rounded-lg flex-row justify-center items-center"
                     onPress={() =>
-                      router.push("/(authenticated)/home/properties/new")
+                      router.push("/(authenticated)/properties/new")
                     }
                     activeOpacity={0.8}
                   >
@@ -108,7 +108,13 @@ export default function Dashboard() {
                     )}
                     <TouchableOpacity
                       className="mt-2 self-end"
-                      onPress={() => router.push(`/properties/${property.id}`)}
+                      onPress={() =>
+                        router.push(
+                          `/(authenticated)/properties/${
+                            property.id as string
+                          } as string`
+                        )
+                      }
                     >
                       <Text className="text-blue-600 font-bold">
                         View Details

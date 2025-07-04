@@ -32,13 +32,36 @@ export function useGeocoding() {
             console.log("data", data);
             if (data && data[0]) {
                 const location = data[0];
+                const addressObj = location.address || {};
+                console.log('Nominatim address object:', addressObj);
+                // Build street address
+                let street = '';
+                if (addressObj.house_number && addressObj.road) {
+                    street = `${addressObj.house_number} ${addressObj.road}`;
+                } else {
+                    street =
+                        addressObj.road ||
+                        addressObj.pedestrian ||
+                        addressObj.footway ||
+                        addressObj.street ||
+                        addressObj.residential ||
+                        location.display_name ||
+                        '';
+                }
                 return {
                     latitude: parseFloat(location.lat),
                     longitude: parseFloat(location.lon),
-                    address: location.display_name,
-                    city: location.address?.city || location.address?.town || "",
-                    country: location.address?.country || "",
-                    postalCode: location.address?.postcode || "",
+                    address: street,
+                    city:
+                        addressObj.city ||
+                        addressObj.town ||
+                        addressObj.village ||
+                        addressObj.hamlet ||
+                        addressObj.municipality ||
+                        addressObj.county ||
+                        "",
+                    country: addressObj.country || "",
+                    postalCode: addressObj.postcode || "",
                 };
             }
             return null;

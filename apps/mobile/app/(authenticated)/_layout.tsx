@@ -12,6 +12,10 @@ function CustomDrawerContent({ navigation }) {
   const { colorScheme, isDarkColorScheme, toggleColorScheme } =
     useColorScheme();
   const user = session?.user;
+  console.log(user);
+  if (!user) {
+    router.replace("/_auth/login");
+  }
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900 p-6">

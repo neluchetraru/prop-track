@@ -27,6 +27,13 @@ export default function TabsLayout() {
         })}
       />
       <Tabs.Screen
+        name="properties"
+        options={({ navigation }) => ({
+          title: "Properties",
+          tabBarLabel: "Properties",
+        })}
+      />
+      <Tabs.Screen
         name="profile"
         options={({ navigation }) => ({
           title: "Profile",

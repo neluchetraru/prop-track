@@ -31,6 +31,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 // Create a new property
 router.post("/", requireAuth, async (req, res) => {
     try {
+        console.log(req.body);
         const property = await propertyService.create(req.user?.id!, req.body);
 
         res.status(201).json(property);
