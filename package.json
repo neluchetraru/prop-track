@@ -1,26 +1,21 @@
 {
   "name": "prop-track",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Property management application",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "turbo run dev",
-    "backend:dev": "cd apps/backend && pnpm run dev",
-    "mobile:dev": "cd apps/mobile && pnpm run start"
+    "backend:dev": "cd backend && pnpm run dev",
+    "mobile:dev": "cd mobile && pnpm run start",
+    "backend:build": "cd backend && pnpm run build",
+    "mobile:build": "cd mobile && pnpm run build",
+    "backend:install": "cd backend && pnpm install",
+    "mobile:install": "cd mobile && pnpm install",
+    "install:all": "pnpm run backend:install && pnpm run mobile:install"
   },
-  "keywords": [],
+  "keywords": [
+    "property",
+    "management",
+    "real-estate"
+  ],
   "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@9.0.5+sha512.a722575c18fd791f9ef71e387c6e16cc03c90d859b9b0998d0428ca0e3220828b32a96e6de73cea34edbc0f50824771b1a69c7ea36b86daa3b89c7e6d9a3d912",
-  "devDependencies": {
-    "concurrently": "^9.1.2",
-    "turbo": "^2.4.4"
-  },
-  "dependencies": {
-    "@better-auth/expo": "^1.2.4",
-    "better-auth": "^1.2.4",
-    "common": "^0.2.5",
-    "prisma": "link:better-auth/adapters/prisma"
-  }
+  "license": "ISC"
 }
